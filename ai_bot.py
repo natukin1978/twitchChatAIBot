@@ -7,6 +7,9 @@ from twitchio import Channel, Message
 from twitchio.ext import commands, eventsub
 
 from config_helper import readConfig
+from text_helper import readText
+
+BASE_PROMPT = readText("base_prompt.txt")
 
 config = readConfig()
 
@@ -43,9 +46,7 @@ class Bot(commands.Bot):
             return
 
         question = match.group(1)
-        response = self.genaiModel.generate_content(
-            question + "\n" + config["basePrompt"]
-        )
+        response = self.genaiModel.generate_content(question + "\n" + BASE_PROMPT)
         await ctx.send(response.text)
 
 

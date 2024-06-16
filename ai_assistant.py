@@ -6,6 +6,9 @@ import twitchio
 from aiohttp import web
 
 from config_helper import readConfig
+from text_helper import readText
+
+BASE_PROMPT = readText("base_prompt.txt")
 
 config = readConfig()
 
@@ -31,9 +34,7 @@ async def main():
 
         if message:
             print(f"Received message: {message}")
-            responseAI = genaiModel.generate_content(
-                message + "\n" + config["basePrompt"]
-            )
+            responseAI = genaiModel.generate_content(message + "\n" + BASE_PROMPT)
             await client.get_channel(CHANNEL_NAME).send(responseAI.text)
             return web.Response(text="Message sent to Twitch chat")
         else:
