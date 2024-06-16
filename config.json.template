@@ -1,0 +1,15 @@
+{
+  "twitch": {
+    "loginChannel": "",
+    "accessToken": "oauth:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  },
+  "google": {
+    "geminiApiKey": "",
+    "modelName": "gemini-1.5-flash"
+  },
+  "recvServer": {
+    "name": "localhost",
+    "port": 14310
+  },
+  "basePrompt": "上記の質問に答えてください。質問の答えはゲーム配信プラットフォームTwitchのチャットに送信します。改行を含まず、なるべく短い簡潔な内容、plain text形式にしてください。"
+}
