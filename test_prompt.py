@@ -14,7 +14,9 @@ config = readConfig()
 genai.configure(api_key=config["google"]["geminiApiKey"])
 genaiModel = genai.GenerativeModel(config["google"]["modelName"])
 genaiChat = genaiModel.start_chat(history=[])
+responseAI = genaiChat.send_message(config["basePrompt"])
+print(responseAI.text)
 
 for question in questions:
-    responseAI = genaiChat.send_message(question + "\n" + config["basePrompt"])
+    responseAI = genaiChat.send_message(question)
     print(responseAI.text)
