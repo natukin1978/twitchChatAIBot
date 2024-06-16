@@ -163,4 +163,5 @@ cython_debug/
 
 # Not managed as it is important information
 /config.json
-/base_prompt.txt
+/prompts/always_prompt.txt
+/prompts/base_prompt.txt

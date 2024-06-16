@@ -10,7 +10,8 @@ from aiohttp import web
 from config_helper import readConfig
 from text_helper import readText
 
-BASE_PROMPT = readText("base_prompt.txt")
+BASE_PROMPT = readText("prompts/base_prompt.txt")
+ALWAYS_PROMPT = readText("prompts/always_prompt.txt")
 
 config = readConfig()
 
@@ -21,6 +22,10 @@ CHANNEL_NAME = config["twitch"]["loginChannel"]
 
 
 async def main():
+    def send_message_with_always_prompt(genaiChat: genai.ChatSession, message: str) -> genai.protos.GenerateContentResponse:
+        print(message)
+        return genaiChat.send_message(message + "\n" + ALWAYS_PROMPT)
+
     async def handle(request):
         message = None
         if request.method == "GET":
@@ -35,8 +40,7 @@ async def main():
             return web.Response(status=405, text="Method Not Allowed")
 
         if message:
-            print(f"Received message: {message}")
-            responseAI = genaiChat.send_message(message)
+            responseAI = send_message_with_always_prompt(genaiChat, message)
             await client.get_channel(CHANNEL_NAME).send(responseAI.text)
             return web.Response(text="Message sent to Twitch chat")
         else:
@@ -61,8 +65,9 @@ async def main():
             print("Not match")
             return
 
-        question = match.group(1)
-        responseAI = genaiChat.send_message(question)
+        message = match.group(1)
+        print(message)
+        responseAI = send_message_with_always_prompt(genaiChat, message)
         await ctx.send(responseAI.text)
 
     app = web.Application()
@@ -79,8 +84,11 @@ async def main():
     genai.configure(api_key=conf_g["geminiApiKey"])
     genaiModel = genai.GenerativeModel(conf_g["modelName"])
     genaiChat = genaiModel.start_chat(history=[])
-    # 基本ルールを教える
+    print("base_prompt:")
     print(BASE_PROMPT)
+    print("always_prompt:")
+    print(ALWAYS_PROMPT)
+    # 基本ルールを教える
     responseAI = genaiChat.send_message(BASE_PROMPT)
     print(responseAI.text)
 
