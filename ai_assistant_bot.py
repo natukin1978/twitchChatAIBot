@@ -12,6 +12,7 @@ from text_helper import readText
 
 BASE_PROMPT = readText("prompts/base_prompt.txt")
 ALWAYS_PROMPT = readText("prompts/always_prompt.txt")
+ERROR_MESSAGE = readText("messages/error_message.txt")
 
 config = readConfig()
 
@@ -22,9 +23,15 @@ CHANNEL_NAME = config["twitch"]["loginChannel"]
 
 
 async def main():
-    def send_message_with_always_prompt(genaiChat: genai.ChatSession, message: str) -> genai.protos.GenerateContentResponse:
-        print(message)
-        return genaiChat.send_message(message + "\n" + ALWAYS_PROMPT)
+    def send_message_with_always_prompt(
+        genaiChat: genai.ChatSession, message: str
+    ) -> genai.protos.GenerateContentResponse:
+        try:
+            print(message)
+            return genaiChat.send_message(message + "\n" + ALWAYS_PROMPT)
+        except Exception as e:
+            print(e)
+            return {"text": ERROR_MESSAGE}
 
     async def handle(request):
         message = None
@@ -66,7 +73,6 @@ async def main():
             return
 
         message = match.group(1)
-        print(message)
         responseAI = send_message_with_always_prompt(genaiChat, message)
         await ctx.send(responseAI.text)
 
