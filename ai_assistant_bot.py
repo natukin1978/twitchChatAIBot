@@ -25,13 +25,14 @@ CHANNEL_NAME = config["twitch"]["loginChannel"]
 async def main():
     def send_message_with_always_prompt(
         genaiChat: genai.ChatSession, message: str
-    ) -> genai.protos.GenerateContentResponse:
+    ) -> str:
         try:
             print(message)
-            return genaiChat.send_message(message + "\n" + ALWAYS_PROMPT)
+            response = genaiChat.send_message(message + "\n" + ALWAYS_PROMPT)
+            return response.text
         except Exception as e:
             print(e)
-            return {"text": ERROR_MESSAGE}
+            return ERROR_MESSAGE
 
     async def handle(request):
         message = None
@@ -47,8 +48,8 @@ async def main():
             return web.Response(status=405, text="Method Not Allowed")
 
         if message:
-            responseAI = send_message_with_always_prompt(genaiChat, message)
-            await client.get_channel(CHANNEL_NAME).send(responseAI.text)
+            response_text = send_message_with_always_prompt(genaiChat, message)
+            await client.get_channel(CHANNEL_NAME).send(response_text)
             return web.Response(text="Message sent to Twitch chat")
         else:
             return web.Response(status=400, text="No message found in request")
@@ -73,8 +74,8 @@ async def main():
             return
 
         message = match.group(1)
-        responseAI = send_message_with_always_prompt(genaiChat, message)
-        await ctx.send(responseAI.text)
+        response_text = send_message_with_always_prompt(genaiChat, message)
+        await ctx.send(response_text)
 
     app = web.Application()
     app.router.add_get("/ai", handle)
