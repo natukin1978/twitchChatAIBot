@@ -5,6 +5,7 @@ import re
 import google.generativeai as genai
 import twitchio
 from twitchio.ext import commands
+import aiohttp
 from aiohttp import web
 
 from config_helper import readConfig
@@ -21,6 +22,8 @@ ACCESS_TOKEN = config["twitch"]["accessToken"]
 # Twitchチャンネルの名前
 CHANNEL_NAME = config["twitch"]["loginChannel"]
 
+WEB_SCRAPING_APIKEY = config["phantomJsCloud"]["apiKey"]
+
 
 def send_message_with_always_prompt(genaiChat: genai.ChatSession, message: str) -> str:
     try:
@@ -31,6 +34,30 @@ def send_message_with_always_prompt(genaiChat: genai.ChatSession, message: str) 
         print(e)
         return ERROR_MESSAGE
 
+def find_url(text: str) -> str:
+    # 正規表現パターン
+    # このパターンは、httpやhttpsプロトコルを含むURLを検索します。
+    # 特に、ドメイン名やサブドメイン、ポート番号などを考慮しています。
+    RE_URL = r'\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`()\[\]{};:\'".,<>?«»“”‘’]))'
+
+    # findall()関数を使用して、テキスト中のすべてのURLを検索
+    urls = re.findall(RE_URL, text)
+
+    # URLが見つからない場合は空のリストを返す
+    if not urls:
+        return ""
+
+    # 最初の要素だけを返す
+    return urls[0][0]
+
+async def fetch(session, url: str) -> str:
+    param = {
+        "url": url,
+        "renderType": "plainText",
+    }
+    API_URL = "http://PhantomJScloud.com/api/browser/v2/" + WEB_SCRAPING_APIKEY + "/"
+    async with session.post(API_URL, data=json.dumps(param)) as response:
+        return await response.text()
 
 class Bot(commands.Bot):
     def __init__(self, genaiChat: genai.ChatSession):
@@ -40,6 +67,23 @@ class Bot(commands.Bot):
             initial_channels=[CHANNEL_NAME],
         )
         self.genaiChat = genaiChat
+
+    async def event_message(self, msg: twitchio.Message):
+        if msg.echo:
+            return
+
+        if msg.content.startswith("!"):
+            await self.handle_commands(msg)
+            return
+
+        text = msg.content
+        if WEB_SCRAPING_APIKEY:
+            url = find_url(text)
+            if url:
+                async with aiohttp.ClientSession() as session:
+                    content = await fetch(session, url)
+                    response_text = send_message_with_always_prompt(self.genaiChat, "以下の内容を要約してください。\n" + content)
+                    await msg.channel.send(response_text)
 
     @commands.command(name="ai")
     async def cmd_ai(self, ctx: commands.Context):
