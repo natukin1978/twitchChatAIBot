@@ -22,18 +22,39 @@ ACCESS_TOKEN = config["twitch"]["accessToken"]
 CHANNEL_NAME = config["twitch"]["loginChannel"]
 
 
-async def main():
-    def send_message_with_always_prompt(
-        genaiChat: genai.ChatSession, message: str
-    ) -> str:
-        try:
-            print(message)
-            response = genaiChat.send_message(message + "\n" + ALWAYS_PROMPT)
-            return response.text
-        except Exception as e:
-            print(e)
-            return ERROR_MESSAGE
+def send_message_with_always_prompt(genaiChat: genai.ChatSession, message: str) -> str:
+    try:
+        print(message)
+        response = genaiChat.send_message(message + "\n" + ALWAYS_PROMPT)
+        return response.text
+    except Exception as e:
+        print(e)
+        return ERROR_MESSAGE
 
+
+class Bot(commands.Bot):
+    def __init__(self, genaiChat: genai.ChatSession):
+        super().__init__(
+            token=ACCESS_TOKEN,
+            prefix="!",
+            initial_channels=[CHANNEL_NAME],
+        )
+        self.genaiChat = genaiChat
+
+    @commands.command(name="ai")
+    async def cmd_ai(self, ctx: commands.Context):
+        pattern = r"^!ai (.*?)$"
+        match = re.search(pattern, ctx.message.content)
+        if not match:
+            print("Not match")
+            return
+
+        message = match.group(1)
+        response_text = send_message_with_always_prompt(self.genaiChat, message)
+        await ctx.send(response_text)
+
+
+async def main():
     async def handle(request):
         message = None
         if request.method == "GET":
@@ -59,24 +80,6 @@ async def main():
         initial_channels=[CHANNEL_NAME],
     )
 
-    bot = commands.Bot(
-        token=ACCESS_TOKEN,
-        prefix="!",
-        initial_channels=[CHANNEL_NAME],
-    )
-
-    @bot.command(name="ai")
-    async def cmd_ai(ctx: commands.Context):
-        pattern = r"^!ai (.*?)$"
-        match = re.search(pattern, ctx.message.content)
-        if not match:
-            print("Not match")
-            return
-
-        message = match.group(1)
-        response_text = send_message_with_always_prompt(genaiChat, message)
-        await ctx.send(response_text)
-
     app = web.Application()
     app.router.add_get("/ai", handle)
     app.router.add_post("/ai", handle)
@@ -99,6 +102,7 @@ async def main():
     responseAI = genaiChat.send_message(BASE_PROMPT)
     print(responseAI.text)
 
+    bot = Bot(genaiChat)
     await bot.connect()
     # await client.connect()
     await client.start()
