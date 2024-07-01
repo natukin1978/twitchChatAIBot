@@ -166,3 +166,4 @@ cython_debug/
 /messages/error_message.txt
 /prompts/always_prompt.txt
 /prompts/base_prompt.txt
+/prompts/web_scraping_prompt.txt
