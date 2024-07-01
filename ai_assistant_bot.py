@@ -2,17 +2,18 @@ import asyncio
 import json
 import re
 
+import aiohttp
 import google.generativeai as genai
 import twitchio
-from twitchio.ext import commands
-import aiohttp
 from aiohttp import web
+from twitchio.ext import commands
 
 from config_helper import readConfig
 from text_helper import readText
 
 BASE_PROMPT = readText("prompts/base_prompt.txt")
 ALWAYS_PROMPT = readText("prompts/always_prompt.txt")
+WEB_SCRAPING_PROMPT = readText("prompts/web_scraping_prompt.txt")
 ERROR_MESSAGE = readText("messages/error_message.txt")
 
 config = readConfig()
@@ -34,30 +35,31 @@ def send_message_with_always_prompt(genaiChat: genai.ChatSession, message: str) 
         print(e)
         return ERROR_MESSAGE
 
+
 def find_url(text: str) -> str:
     # 正規表現パターン
     # このパターンは、httpやhttpsプロトコルを含むURLを検索します。
     # 特に、ドメイン名やサブドメイン、ポート番号などを考慮しています。
     RE_URL = r'\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`()\[\]{};:\'".,<>?«»“”‘’]))'
 
-    # findall()関数を使用して、テキスト中のすべてのURLを検索
     urls = re.findall(RE_URL, text)
-
-    # URLが見つからない場合は空のリストを返す
     if not urls:
         return ""
 
     # 最初の要素だけを返す
     return urls[0][0]
 
-async def fetch(session, url: str) -> str:
+
+async def web_scraping(url: str) -> str:
     param = {
         "url": url,
         "renderType": "plainText",
     }
     API_URL = "http://PhantomJScloud.com/api/browser/v2/" + WEB_SCRAPING_APIKEY + "/"
-    async with session.post(API_URL, data=json.dumps(param)) as response:
-        return await response.text()
+    async with aiohttp.ClientSession() as session:
+        async with session.post(API_URL, data=json.dumps(param)) as response:
+            return await response.text()
+
 
 class Bot(commands.Bot):
     def __init__(self, genaiChat: genai.ChatSession):
@@ -80,10 +82,11 @@ class Bot(commands.Bot):
         if WEB_SCRAPING_APIKEY:
             url = find_url(text)
             if url:
-                async with aiohttp.ClientSession() as session:
-                    content = await fetch(session, url)
-                    response_text = send_message_with_always_prompt(self.genaiChat, "以下の内容を要約してください。\n" + content)
-                    await msg.channel.send(response_text)
+                content = await web_scraping(url)
+                response_text = send_message_with_always_prompt(
+                    self.genaiChat, WEB_SCRAPING_PROMPT + "\n" + content
+                )
+                await msg.channel.send(response_text)
 
     @commands.command(name="ai")
     async def cmd_ai(self, ctx: commands.Context):
