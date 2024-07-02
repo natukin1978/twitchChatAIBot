@@ -6,10 +6,22 @@ import aiohttp
 import google.generativeai as genai
 import twitchio
 from aiohttp import web
+from google.generativeai.types import HarmBlockThreshold, HarmCategory
 from twitchio.ext import commands
 
 from config_helper import readConfig
 from text_helper import readText
+
+GENAI_SAFETY_SETTINGS = {
+    # ハラスメントは中程度を許容する
+    HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    # ヘイトスピーチは厳しく制限する
+    HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+    # セクシャルな内容を多少は許容する
+    HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+    # ゲーム向けなので、危険に分類されるコンテンツを許容できる
+    HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+}
 
 BASE_PROMPT = readText("prompts/base_prompt.txt")
 ALWAYS_PROMPT = readText("prompts/always_prompt.txt")
@@ -29,7 +41,9 @@ WEB_SCRAPING_APIKEY = config["phantomJsCloud"]["apiKey"]
 def send_message_with_always_prompt(genaiChat: genai.ChatSession, message: str) -> str:
     try:
         print(message)
-        response = genaiChat.send_message(message + "\n" + ALWAYS_PROMPT)
+        response = genaiChat.send_message(
+            message + "\n" + ALWAYS_PROMPT, safety_settings=GENAI_SAFETY_SETTINGS
+        )
         return response.text
     except Exception as e:
         print(e)
@@ -146,7 +160,9 @@ async def main():
     print("always_prompt:")
     print(ALWAYS_PROMPT)
     # 基本ルールを教える
-    responseAI = genaiChat.send_message(BASE_PROMPT)
+    responseAI = genaiChat.send_message(
+        BASE_PROMPT, safety_settings=GENAI_SAFETY_SETTINGS
+    )
     print(responseAI.text)
 
     bot = Bot(genaiChat)
