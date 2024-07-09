@@ -6,6 +6,7 @@ import aiohttp
 import google.generativeai as genai
 import twitchio
 from aiohttp import web
+from bs4 import BeautifulSoup
 from google.generativeai.types import HarmBlockThreshold, HarmCategory
 from twitchio.ext import commands
 
@@ -27,6 +28,7 @@ BASE_PROMPT = readText("prompts/base_prompt.txt")
 ALWAYS_PROMPT = readText("prompts/always_prompt.txt")
 WEB_SCRAPING_PROMPT = readText("prompts/web_scraping_prompt.txt")
 ERROR_MESSAGE = readText("messages/error_message.txt")
+WEB_SCRAPING_MESSAGE = readText("messages/web_scraping_message.txt")
 
 config = readConfig()
 
@@ -64,15 +66,22 @@ def find_url(text: str) -> str:
     return urls[0][0]
 
 
-async def web_scraping(url: str) -> str:
+async def web_scraping(url: str, renderType: str) -> str:
     param = {
         "url": url,
-        "renderType": "plainText",
+        "renderType": renderType,
     }
     API_URL = "http://PhantomJScloud.com/api/browser/v2/" + WEB_SCRAPING_APIKEY + "/"
     async with aiohttp.ClientSession() as session:
         async with session.post(API_URL, data=json.dumps(param)) as response:
             return await response.text()
+
+
+def get_all_contents(html_content: str, target_selector: str) -> list:
+    soup = BeautifulSoup(html_content, "html.parser")
+    elem = soup.select_one(target_selector)
+    elem_strings = elem.stripped_strings
+    return [elem_string for elem_string in elem_strings]
 
 
 class Bot(commands.Bot):
@@ -96,7 +105,18 @@ class Bot(commands.Bot):
         if WEB_SCRAPING_APIKEY:
             url = find_url(text)
             if url:
-                content = await web_scraping(url)
+                await msg.channel.send(WEB_SCRAPING_MESSAGE)
+
+                content = None
+                if "www.twitch.tv" in url:
+                    content = await web_scraping(url, "html")
+                    contents_list = get_all_contents(
+                        content, "[class*='channel-info-content']"
+                    )
+                    content = "\n".join(contents_list)
+                else:
+                    content = await web_scraping(url, "plainText")
+
                 response_text = send_message_with_always_prompt(
                     self.genaiChat, WEB_SCRAPING_PROMPT + "\n" + content
                 )
