@@ -3,31 +3,17 @@ import json
 import re
 
 import aiohttp
-import google.generativeai as genai
 import twitchio
 from aiohttp import web
 from bs4 import BeautifulSoup
-from google.generativeai.types import HarmBlockThreshold, HarmCategory
 from twitchio.ext import commands
 
 from config_helper import readConfig
+from genai import Genai
 from text_helper import readText
 
-GENAI_SAFETY_SETTINGS = {
-    # ハラスメントは中程度を許容する
-    HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-    # ヘイトスピーチは厳しく制限する
-    HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-    # セクシャルな内容を多少は許容する
-    HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-    # ゲーム向けなので、危険に分類されるコンテンツを許容できる
-    HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-}
-
 BASE_PROMPT = readText("prompts/base_prompt.txt")
-ALWAYS_PROMPT = readText("prompts/always_prompt.txt")
 WEB_SCRAPING_PROMPT = readText("prompts/web_scraping_prompt.txt")
-ERROR_MESSAGE = readText("messages/error_message.txt")
 WEB_SCRAPING_MESSAGE = readText("messages/web_scraping_message.txt")
 
 config = readConfig()
@@ -38,18 +24,6 @@ ACCESS_TOKEN = config["twitch"]["accessToken"]
 CHANNEL_NAME = config["twitch"]["loginChannel"]
 
 WEB_SCRAPING_APIKEY = config["phantomJsCloud"]["apiKey"]
-
-
-def send_message_with_always_prompt(genaiChat: genai.ChatSession, message: str) -> str:
-    try:
-        print(message)
-        response = genaiChat.send_message(
-            message + "\n" + ALWAYS_PROMPT, safety_settings=GENAI_SAFETY_SETTINGS
-        )
-        return response.text
-    except Exception as e:
-        print(e)
-        return ERROR_MESSAGE
 
 
 def find_url(text: str) -> str:
@@ -85,13 +59,13 @@ def get_all_contents(html_content: str, target_selector: str) -> list:
 
 
 class Bot(commands.Bot):
-    def __init__(self, genaiChat: genai.ChatSession):
+    def __init__(self, genai: Genai):
         super().__init__(
             token=ACCESS_TOKEN,
             prefix="!",
             initial_channels=[CHANNEL_NAME],
         )
-        self.genaiChat = genaiChat
+        self.genai = genai
 
     async def event_message(self, msg: twitchio.Message):
         if msg.echo:
@@ -117,8 +91,8 @@ class Bot(commands.Bot):
                 else:
                     content = await web_scraping(url, "plainText")
 
-                response_text = send_message_with_always_prompt(
-                    self.genaiChat, WEB_SCRAPING_PROMPT + "\n" + content
+                response_text = self.genai.send_message_with_always_prompt(
+                    WEB_SCRAPING_PROMPT + "\n" + content
                 )
                 await msg.channel.send(response_text)
 
@@ -131,7 +105,7 @@ class Bot(commands.Bot):
             return
 
         message = match.group(1)
-        response_text = send_message_with_always_prompt(self.genaiChat, message)
+        response_text = self.genai.send_message_with_always_prompt(message)
         await ctx.send(response_text)
 
 
@@ -150,7 +124,7 @@ async def main():
             return web.Response(status=405, text="Method Not Allowed")
 
         if message:
-            response_text = send_message_with_always_prompt(genaiChat, message)
+            response_text = genai.send_message_with_always_prompt(message)
             await client.get_channel(CHANNEL_NAME).send(response_text)
             return web.Response(text="Message sent to Twitch chat")
         else:
@@ -171,21 +145,15 @@ async def main():
     site = web.TCPSite(runner, conf_rs["name"], conf_rs["port"])
     await site.start()
 
-    conf_g = config["google"]
-    genai.configure(api_key=conf_g["geminiApiKey"])
-    genaiModel = genai.GenerativeModel(conf_g["modelName"])
-    genaiChat = genaiModel.start_chat(history=[])
+    genai = Genai(config)
     print("base_prompt:")
     print(BASE_PROMPT)
     print("always_prompt:")
-    print(ALWAYS_PROMPT)
+    print(genai.ALWAYS_PROMPT)
     # 基本ルールを教える
-    responseAI = genaiChat.send_message(
-        BASE_PROMPT, safety_settings=GENAI_SAFETY_SETTINGS
-    )
-    print(responseAI.text)
+    genai.send_message(BASE_PROMPT)
 
-    bot = Bot(genaiChat)
+    bot = Bot(genai)
     await bot.connect()
     # await client.connect()
     await client.start()
