@@ -1,13 +1,11 @@
 import google.generativeai as genai
 from google.generativeai.types import HarmBlockThreshold, HarmCategory
 
+import global_value as g
 from text_helper import readText
 
 
-class Genai:
-    ALWAYS_PROMPT = readText("prompts/always_prompt.txt")
-    ERROR_MESSAGE = readText("messages/error_message.txt")
-
+class GenAI:
     GENAI_SAFETY_SETTINGS = {
         # ハラスメントは中程度を許容する
         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
@@ -35,7 +33,7 @@ class Genai:
             return response.text
         except Exception as e:
             print(e)
-            return self.ERROR_MESSAGE
+            return g.ERROR_MESSAGE
 
     def send_message_with_always_prompt(self, message: str) -> str:
-        return self.send_message(message + "\n" + self.ALWAYS_PROMPT)
+        return self.send_message(message + "\n" + g.ALWAYS_PROMPT)
