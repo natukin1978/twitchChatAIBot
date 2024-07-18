@@ -8,6 +8,7 @@ from twitchio.ext import commands
 
 import global_value as g
 from genai import GenAI
+from talk_voice import talk_voice
 
 
 class TwitchBot(commands.Bot):
@@ -65,6 +66,7 @@ class TwitchBot(commands.Bot):
         if g.WEB_SCRAPING_APIKEY:
             url = TwitchBot.find_url(text)
             if url:
+                await talk_voice(g.WEB_SCRAPING_MESSAGE)
                 await msg.channel.send(g.WEB_SCRAPING_MESSAGE)
 
                 content = None
@@ -80,6 +82,7 @@ class TwitchBot(commands.Bot):
                 response_text = self.genai.send_message_with_always_prompt(
                     g.WEB_SCRAPING_PROMPT + "\n" + content
                 )
+                await talk_voice(response_text)
                 await msg.channel.send(response_text)
 
     @commands.command(name="ai")
@@ -92,4 +95,5 @@ class TwitchBot(commands.Bot):
 
         message = match.group(1)
         response_text = self.genai.send_message_with_always_prompt(message)
+        await talk_voice(response_text)
         await ctx.send(response_text)

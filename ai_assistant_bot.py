@@ -10,6 +10,7 @@ from config_helper import readConfig
 from genai import GenAI
 from text_helper import readText
 from twitch_bot import TwitchBot
+from talk_voice import talk_voice
 
 g.ALWAYS_PROMPT = readText("prompts/always_prompt.txt")
 g.BASE_PROMPT = readText("prompts/base_prompt.txt")
@@ -43,6 +44,7 @@ async def main():
 
         if message:
             response_text = genai.send_message_with_always_prompt(message)
+            await talk_voice(response_text)
             await client.get_channel(g.CHANNEL_NAME).send(response_text)
             return web.Response(text="Message sent to Twitch chat")
         else:
