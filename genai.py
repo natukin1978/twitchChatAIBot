@@ -1,3 +1,4 @@
+import datetime
 import json
 import twitchio
 from typing import Any, Dict
@@ -28,14 +29,21 @@ class GenAI:
 
     @staticmethod
     def create_message_json(msg: twitchio.Message) -> Dict[str, Any]:
-        return {
+        localtime = datetime.datetime.now()
+        localtime_iso_8601 = localtime.isoformat()
+        json_data = {
+            "dateTime": localtime_iso_8601,
             "id": msg.author.name,
             "displayName": msg.author.display_name,
             "content": None,  # 関数外で設定してね
             "isFirst": msg.first,
             "answerLength": 40,
-            "answerLevel": 1,  # `質問や問いかけに答える`か、`傍観する`かを、あなたの判断に任せます
+            "answerLevel": 25,
         }
+        if json_data["isFirst"]:
+            # 初見さんへの回答は必須
+            json_data["answerLevel"] = 100
+        return json_data
 
     def send_message(self, message: str) -> str:
         try:

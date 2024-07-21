@@ -47,7 +47,7 @@ async def main():
                 "content": message,
                 "isFirst": False,
                 "answerLength": 40,
-                "answerLevel": 2,  # 常に回答してください
+                "answerLevel": 100,  # 常に回答してください
             }
             response_text = genai.send_message_by_json(json_data)
             await talk_voice(response_text)
