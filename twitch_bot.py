@@ -63,6 +63,10 @@ class TwitchBot(commands.Bot):
             return
 
         text = msg.content
+
+        json_data = GenAI.create_message_json(msg)
+        json_data["content"] = text
+
         if g.WEB_SCRAPING_APIKEY:
             url = TwitchBot.find_url(text)
             if url:
@@ -79,11 +83,15 @@ class TwitchBot(commands.Bot):
                 else:
                     content = await TwitchBot.web_scraping(url, "plainText")
 
-                response_text = self.genai.send_message_with_always_prompt(
-                    g.WEB_SCRAPING_PROMPT + "\n" + content
-                )
-                await talk_voice(response_text)
-                await msg.channel.send(response_text)
+                json_data["content"] = g.WEB_SCRAPING_PROMPT + "\n" + content
+                json_data["answerLength"] = 80  # Webの内容なのでちょっと大目に見る
+                json_data["answerLevel"] = 2  # 常に回答してください
+
+        response_text = self.genai.send_message_by_json(json_data)
+        response_text = response_text.rstrip()
+        if response_text:
+            await talk_voice(response_text)
+            await msg.channel.send(response_text)
 
     @commands.command(name="ai")
     async def cmd_ai(self, ctx: commands.Context):
@@ -93,7 +101,11 @@ class TwitchBot(commands.Bot):
             print("Not match")
             return
 
-        message = match.group(1)
-        response_text = self.genai.send_message_with_always_prompt(message)
+        text = match.group(1)
+
+        json_data = GenAI.create_message_json(ctx.message)
+        json_data["content"] = text
+        json_data["answerLevel"] = 2  # 常に回答してください
+        response_text = self.genai.send_message_by_json(json_data)
         await talk_voice(response_text)
         await ctx.send(response_text)

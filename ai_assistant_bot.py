@@ -12,7 +12,6 @@ from text_helper import readText
 from twitch_bot import TwitchBot
 from talk_voice import talk_voice
 
-g.ALWAYS_PROMPT = readText("prompts/always_prompt.txt")
 g.BASE_PROMPT = readText("prompts/base_prompt.txt")
 g.WEB_SCRAPING_PROMPT = readText("prompts/web_scraping_prompt.txt")
 g.ERROR_MESSAGE = readText("messages/error_message.txt")
@@ -43,7 +42,14 @@ async def main():
             return web.Response(status=405, text="Method Not Allowed")
 
         if message:
-            response_text = genai.send_message_with_always_prompt(message)
+            json_data = {
+                "id": g.CHANNEL_NAME,
+                "content": message,
+                "isFirst": False,
+                "answerLength": 40,
+                "answerLevel": 2,  # 常に回答してください
+            }
+            response_text = genai.send_message_by_json(json_data)
             await talk_voice(response_text)
             await client.get_channel(g.CHANNEL_NAME).send(response_text)
             return web.Response(text="Message sent to Twitch chat")
@@ -53,8 +59,6 @@ async def main():
     genai = GenAI(config)
     print("base_prompt:")
     print(g.BASE_PROMPT)
-    print("always_prompt:")
-    print(g.ALWAYS_PROMPT)
     # 基本ルールを教える
     response_text = genai.send_message(g.BASE_PROMPT)
 

@@ -1,3 +1,6 @@
+import json
+import twitchio
+from typing import Any, Dict
 import google.generativeai as genai
 from google.generativeai.types import HarmBlockThreshold, HarmCategory
 
@@ -23,6 +26,17 @@ class GenAI:
         genaiModel = genai.GenerativeModel(conf_g["modelName"])
         self.genaiChat = genaiModel.start_chat(history=[])
 
+    @staticmethod
+    def create_message_json(msg: twitchio.Message) -> Dict[str, Any]:
+        return {
+            "id": msg.author.name,
+            "displayName": msg.author.display_name,
+            "content": None,  # 関数外で設定してね
+            "isFirst": msg.first,
+            "answerLength": 40,
+            "answerLevel": 1,  # `質問や問いかけに答える`か、`傍観する`かを、あなたの判断に任せます
+        }
+
     def send_message(self, message: str) -> str:
         try:
             print(message)
@@ -35,5 +49,6 @@ class GenAI:
             print(e)
             return g.ERROR_MESSAGE
 
-    def send_message_with_always_prompt(self, message: str) -> str:
-        return self.send_message(message + "\n" + g.ALWAYS_PROMPT)
+    def send_message_by_json(self, json_data: Dict[str, Any]) -> str:
+        json_str = json.dumps(json_data, ensure_ascii=False)
+        return self.send_message(json_str)
