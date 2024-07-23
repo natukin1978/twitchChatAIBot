@@ -15,6 +15,7 @@ from talk_voice import talk_voice
 g.BASE_PROMPT = readText("prompts/base_prompt.txt")
 g.WEB_SCRAPING_PROMPT = readText("prompts/web_scraping_prompt.txt")
 g.ERROR_MESSAGE = readText("messages/error_message.txt")
+g.STOP_CANDIDATE_MESSAGE = readText("messages/stop_candidate_message.txt")
 g.WEB_SCRAPING_MESSAGE = readText("messages/web_scraping_message.txt")
 
 config = readConfig()
@@ -50,8 +51,9 @@ async def main():
                 "answerLevel": 100,  # 常に回答してください
             }
             response_text = genai.send_message_by_json(json_data)
-            await talk_voice(response_text)
-            await client.get_channel(g.CHANNEL_NAME).send(response_text)
+            if response_text:
+                await talk_voice(response_text)
+                await client.get_channel(g.CHANNEL_NAME).send(response_text)
             return web.Response(text="Message sent to Twitch chat")
         else:
             return web.Response(status=400, text="No message found in request")
@@ -59,8 +61,6 @@ async def main():
     genai = GenAI(config)
     print("base_prompt:")
     print(g.BASE_PROMPT)
-    # 基本ルールを教える
-    response_text = genai.send_message(g.BASE_PROMPT)
 
     client = twitchio.Client(
         token=g.ACCESS_TOKEN,

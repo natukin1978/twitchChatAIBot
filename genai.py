@@ -3,7 +3,11 @@ import json
 import twitchio
 from typing import Any, Dict
 import google.generativeai as genai
-from google.generativeai.types import HarmBlockThreshold, HarmCategory
+from google.generativeai.types import (
+    HarmBlockThreshold,
+    HarmCategory,
+    StopCandidateException,
+)
 
 import global_value as g
 from text_helper import readText
@@ -24,7 +28,11 @@ class GenAI:
     def __init__(self, config):
         conf_g = config["google"]
         genai.configure(api_key=conf_g["geminiApiKey"])
-        genaiModel = genai.GenerativeModel(conf_g["modelName"])
+        genaiModel = genai.GenerativeModel(
+            model_name=conf_g["modelName"],
+            safety_settings=self.GENAI_SAFETY_SETTINGS,
+            system_instruction=g.BASE_PROMPT,
+        )
         self.genaiChat = genaiModel.start_chat(history=[])
 
     @staticmethod
@@ -48,11 +56,16 @@ class GenAI:
     def send_message(self, message: str) -> str:
         try:
             print(message)
-            response = self.genaiChat.send_message(
-                message, safety_settings=self.GENAI_SAFETY_SETTINGS
-            )
-            print(response.text)
-            return response.text
+            response = self.genaiChat.send_message(message)
+            response_text = response.text.rstrip()
+            print(response_text)
+            return response_text
+        except StopCandidateException as e:
+            print(e)
+            return g.STOP_CANDIDATE_MESSAGE
+        except IndexError as e:
+            print(e)
+            return ""
         except Exception as e:
             print(e)
             return g.ERROR_MESSAGE

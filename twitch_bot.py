@@ -88,7 +88,6 @@ class TwitchBot(commands.Bot):
                 json_data["answerLevel"] = 100  # 常に回答してください
 
         response_text = self.genai.send_message_by_json(json_data)
-        response_text = response_text.rstrip()
         if response_text:
             await talk_voice(response_text)
             await msg.channel.send(response_text)
@@ -107,5 +106,6 @@ class TwitchBot(commands.Bot):
         json_data["content"] = text
         json_data["answerLevel"] = 100  # 常に回答してください
         response_text = self.genai.send_message_by_json(json_data)
-        await talk_voice(response_text)
-        await ctx.send(response_text)
+        if response_text:
+            await talk_voice(response_text)
+            await ctx.send(response_text)
