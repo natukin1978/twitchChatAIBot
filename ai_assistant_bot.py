@@ -27,6 +27,8 @@ g.CHANNEL_NAME = config["twitch"]["loginChannel"]
 
 g.WEB_SCRAPING_APIKEY = config["phantomJsCloud"]["apiKey"]
 
+g.map_is_first_on_stream = {}
+
 
 async def main():
     async def handle(request):
@@ -43,13 +45,11 @@ async def main():
             return web.Response(status=405, text="Method Not Allowed")
 
         if message:
-            json_data = {
-                "id": g.CHANNEL_NAME,
-                "content": message,
-                "isFirst": False,
-                "answerLength": 40,
-                "answerLevel": 100,  # 常に回答してください
-            }
+            json_data = GenAI.create_message_json()
+            json_data["id"] = g.CHANNEL_NAME
+            json_data["content"] = message
+            json_data["answerLevel"] = 100  # 常に回答してください
+            GenAI.update_is_first_on_stream(json_data)
             response_text = genai.send_message_by_json(json_data)
             if response_text:
                 await talk_voice(response_text)
