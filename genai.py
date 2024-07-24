@@ -58,7 +58,7 @@ class GenAI:
             "isFirst": False,  # 関数外で設定してね
             "isFirstOnStream": None,  # すぐ下で設定する
             "answerLength": 40,
-            "answerLevel": 50,
+            "answerLevel": 33,
         }
         if msg:
             json_data["id"] = msg.author.name
