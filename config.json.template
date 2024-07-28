@@ -13,5 +13,8 @@
   "recvServer": {
     "name": "localhost",
     "port": 14310
+  },
+  "oneComme": {
+    "pathUsersCsv": ""
   }
 }

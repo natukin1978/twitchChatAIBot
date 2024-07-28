@@ -41,7 +41,9 @@ class TwitchBot(commands.Bot):
             "renderType": renderType,
         }
         API_URL = (
-            "http://PhantomJScloud.com/api/browser/v2/" + g.config["phantomJsCloud"]["apiKey"] + "/"
+            "http://PhantomJScloud.com/api/browser/v2/"
+            + g.config["phantomJsCloud"]["apiKey"]
+            + "/"
         )
         async with aiohttp.ClientSession() as session:
             async with session.post(API_URL, data=json.dumps(param)) as response:

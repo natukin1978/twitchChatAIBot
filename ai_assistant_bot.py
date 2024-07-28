@@ -11,6 +11,7 @@ from genai import GenAI
 from text_helper import readText
 from twitch_bot import TwitchBot
 from talk_voice import talk_voice
+from one_comme_users import update_message_json, read_one_comme_users
 
 g.BASE_PROMPT = readText("prompts/base_prompt.txt")
 g.WEB_SCRAPING_PROMPT = readText("prompts/web_scraping_prompt.txt")
@@ -21,6 +22,7 @@ g.WEB_SCRAPING_MESSAGE = readText("messages/web_scraping_message.txt")
 g.config = readConfig()
 
 g.map_is_first_on_stream = {}
+g.one_comme_users = read_one_comme_users()
 
 
 async def main():
@@ -42,11 +44,13 @@ async def main():
             json_data["id"] = g.config["twitch"]["loginChannel"]
             json_data["content"] = message
             json_data["answerLevel"] = 100  # 常に回答してください
-            GenAI.update_is_first_on_stream(json_data)
+            update_message_json(json_data)
             response_text = genai.send_message_by_json(json_data)
             if response_text:
                 await talk_voice(response_text)
-                await client.get_channel(g.config["twitch"]["loginChannel"]).send(response_text)
+                await client.get_channel(g.config["twitch"]["loginChannel"]).send(
+                    response_text
+                )
             return web.Response(text="Message sent to Twitch chat")
         else:
             return web.Response(status=400, text="No message found in request")

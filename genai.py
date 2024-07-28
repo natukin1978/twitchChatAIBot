@@ -11,6 +11,7 @@ from google.generativeai.types import (
 
 import global_value as g
 from text_helper import readText
+from one_comme_users import update_message_json
 
 
 class GenAI:
@@ -36,26 +37,16 @@ class GenAI:
         self.genaiChat = genaiModel.start_chat(history=[])
 
     @staticmethod
-    def update_is_first_on_stream(json_data: Dict[str, Any]) -> None:
-        name = json_data["id"]
-        val = None
-        if name not in g.map_is_first_on_stream:
-            val = True
-        else:
-            val = g.map_is_first_on_stream[name]
-        json_data["isFirstOnStream"] = val
-        g.map_is_first_on_stream[name] = False
-
-    @staticmethod
     def create_message_json(msg: twitchio.Message = None) -> Dict[str, Any]:
         localtime = datetime.datetime.now()
         localtime_iso_8601 = localtime.isoformat()
         json_data = {
             "dateTime": localtime_iso_8601,
-            "id": None,  # 関数外で設定してね
-            "displayName": None,  # 関数外で設定してね
+            "id": None,
+            "displayName": None,
+            "nickname": None,
             "content": None,  # 関数外で設定してね
-            "isFirst": False,  # 関数外で設定してね
+            "isFirst": False,
             "isFirstOnStream": None,  # すぐ下で設定する
             "answerLength": 40,
             "answerLevel": 25,
@@ -67,7 +58,7 @@ class GenAI:
         if json_data["isFirst"]:
             # 初見さんへの回答は必須
             json_data["answerLevel"] = 100
-        GenAI.update_is_first_on_stream(json_data)
+        update_message_json(json_data)
         return json_data
 
     def send_message(self, message: str) -> str:
