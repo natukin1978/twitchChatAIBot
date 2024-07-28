@@ -14,9 +14,9 @@ from talk_voice import talk_voice
 class TwitchBot(commands.Bot):
     def __init__(self, genai: GenAI):
         super().__init__(
-            token=g.ACCESS_TOKEN,
+            token=g.config["twitch"]["accessToken"],
             prefix="!",
-            initial_channels=[g.CHANNEL_NAME],
+            initial_channels=[g.config["twitch"]["loginChannel"]],
         )
         self.genai = genai
 
@@ -41,7 +41,7 @@ class TwitchBot(commands.Bot):
             "renderType": renderType,
         }
         API_URL = (
-            "http://PhantomJScloud.com/api/browser/v2/" + g.WEB_SCRAPING_APIKEY + "/"
+            "http://PhantomJScloud.com/api/browser/v2/" + g.config["phantomJsCloud"]["apiKey"] + "/"
         )
         async with aiohttp.ClientSession() as session:
             async with session.post(API_URL, data=json.dumps(param)) as response:
@@ -67,7 +67,7 @@ class TwitchBot(commands.Bot):
         json_data = GenAI.create_message_json(msg)
         json_data["content"] = text
 
-        if g.WEB_SCRAPING_APIKEY:
+        if g.config["phantomJsCloud"]["apiKey"]:
             url = TwitchBot.find_url(text)
             if url:
                 await talk_voice(g.WEB_SCRAPING_MESSAGE)

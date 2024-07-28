@@ -25,8 +25,8 @@ class GenAI:
         HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
     }
 
-    def __init__(self, config):
-        conf_g = config["google"]
+    def __init__(self):
+        conf_g = g.config["google"]
         genai.configure(api_key=conf_g["geminiApiKey"])
         genaiModel = genai.GenerativeModel(
             model_name=conf_g["modelName"],

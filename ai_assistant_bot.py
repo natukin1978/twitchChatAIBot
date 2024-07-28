@@ -18,14 +18,7 @@ g.ERROR_MESSAGE = readText("messages/error_message.txt")
 g.STOP_CANDIDATE_MESSAGE = readText("messages/stop_candidate_message.txt")
 g.WEB_SCRAPING_MESSAGE = readText("messages/web_scraping_message.txt")
 
-config = readConfig()
-
-# TwitchのOAuthトークン
-g.ACCESS_TOKEN = config["twitch"]["accessToken"]
-# Twitchチャンネルの名前
-g.CHANNEL_NAME = config["twitch"]["loginChannel"]
-
-g.WEB_SCRAPING_APIKEY = config["phantomJsCloud"]["apiKey"]
+g.config = readConfig()
 
 g.map_is_first_on_stream = {}
 
@@ -46,25 +39,25 @@ async def main():
 
         if message:
             json_data = GenAI.create_message_json()
-            json_data["id"] = g.CHANNEL_NAME
+            json_data["id"] = g.config["twitch"]["loginChannel"]
             json_data["content"] = message
             json_data["answerLevel"] = 100  # 常に回答してください
             GenAI.update_is_first_on_stream(json_data)
             response_text = genai.send_message_by_json(json_data)
             if response_text:
                 await talk_voice(response_text)
-                await client.get_channel(g.CHANNEL_NAME).send(response_text)
+                await client.get_channel(g.config["twitch"]["loginChannel"]).send(response_text)
             return web.Response(text="Message sent to Twitch chat")
         else:
             return web.Response(status=400, text="No message found in request")
 
-    genai = GenAI(config)
+    genai = GenAI()
     print("base_prompt:")
     print(g.BASE_PROMPT)
 
     client = twitchio.Client(
-        token=g.ACCESS_TOKEN,
-        initial_channels=[g.CHANNEL_NAME],
+        token=g.config["twitch"]["accessToken"],
+        initial_channels=[g.config["twitch"]["loginChannel"]],
     )
     await client.connect()
 
@@ -74,7 +67,7 @@ async def main():
     runner = web.AppRunner(app)
     await runner.setup()
 
-    conf_rs = config["recvServer"]
+    conf_rs = g.config["recvServer"]
     if conf_rs and conf_rs["name"] and conf_rs["port"]:
         site = web.TCPSite(runner, conf_rs["name"], conf_rs["port"])
         await site.start()
