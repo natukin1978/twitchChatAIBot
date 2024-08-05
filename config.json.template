@@ -19,6 +19,8 @@
     "port": 7180,
     "login": "SeikaServerUser",
     "password": "SeikaServerPassword",
+    "speed": 1.0,
+    "volume": 1.0,
     "cid": 0
   },
   "oneComme": {

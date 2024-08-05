@@ -8,7 +8,7 @@ from twitchio.ext import commands
 
 import global_value as g
 from genai import GenAI
-from talk_voice import talk_voice
+from talk_voice import talk_voice, set_voice_effect
 
 
 class TwitchBot(commands.Bot):
@@ -115,3 +115,21 @@ class TwitchBot(commands.Bot):
         if response_text:
             await talk_voice(response_text)
             await ctx.send(response_text)
+
+    @commands.command(name="ai_speed")
+    async def cmd_ai_speed(self, ctx: commands.Context):
+        id = ctx.message.author.name
+        if id != g.config["twitch"]["loginChannel"]:
+            # 主人のみ
+            return
+        text = TwitchBot.get_cmd_value(ctx.message.content)
+        await set_voice_effect("speed", text)
+
+    @commands.command(name="ai_volume")
+    async def cmd_ai_volume(self, ctx: commands.Context):
+        id = ctx.message.author.name
+        if id != g.config["twitch"]["loginChannel"]:
+            # 主人のみ
+            return
+        text = TwitchBot.get_cmd_value(ctx.message.content)
+        await set_voice_effect("volume", text)
