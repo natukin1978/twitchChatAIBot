@@ -94,15 +94,19 @@ class TwitchBot(commands.Bot):
             await talk_voice(response_text)
             await msg.channel.send(response_text)
 
-    @commands.command(name="ai")
-    async def cmd_ai(self, ctx: commands.Context):
-        pattern = r"^!ai (.*?)$"
-        match = re.search(pattern, ctx.message.content)
+    @staticmethod
+    def get_cmd_value(content: str) -> str:
+        pattern = r"^![^ ]+ (.*?)$"
+        match = re.search(pattern, content)
         if not match:
             print("Not match")
-            return
+            return ""
 
-        text = match.group(1)
+        return match.group(1)
+
+    @commands.command(name="ai")
+    async def cmd_ai(self, ctx: commands.Context):
+        text = TwitchBot.get_cmd_value(ctx.message.content)
 
         json_data = GenAI.create_message_json(ctx.message)
         json_data["content"] = text
