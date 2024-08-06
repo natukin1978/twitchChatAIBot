@@ -9,6 +9,7 @@ from twitchio.ext import commands
 import global_value as g
 from genai import GenAI
 from talk_voice import talk_voice, set_voice_effect
+from random_helper import is_hit_by_message_json
 
 
 class TwitchBot(commands.Bot):
@@ -68,10 +69,12 @@ class TwitchBot(commands.Bot):
 
         json_data = GenAI.create_message_json(msg)
         json_data["content"] = text
+        answerLevel = 20  # 1/5くらいの確率
 
         if g.config["phantomJsCloud"]["apiKey"]:
             url = TwitchBot.find_url(text)
             if url:
+                # Webスクレイピングを表明する
                 await talk_voice(g.WEB_SCRAPING_MESSAGE)
                 await msg.channel.send(g.WEB_SCRAPING_MESSAGE)
 
@@ -87,10 +90,10 @@ class TwitchBot(commands.Bot):
 
                 json_data["content"] = g.WEB_SCRAPING_PROMPT + "\n" + content
                 json_data["answerLength"] = 80  # Webの内容なのでちょっと大目に見る
-                json_data["answerLevel"] = 100  # 常に回答してください
+                answerLevel = 100  # 常に回答してください
 
         response_text = self.genai.send_message_by_json(json_data)
-        if response_text:
+        if response_text and is_hit_by_message_json(answerLevel, json_data):
             await talk_voice(response_text)
             await msg.channel.send(response_text)
 
@@ -110,7 +113,6 @@ class TwitchBot(commands.Bot):
 
         json_data = GenAI.create_message_json(ctx.message)
         json_data["content"] = text
-        json_data["answerLevel"] = 100  # 常に回答してください
         response_text = self.genai.send_message_by_json(json_data)
         if response_text:
             await talk_voice(response_text)

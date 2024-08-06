@@ -49,15 +49,11 @@ class GenAI:
             "isFirst": False,
             "isFirstOnStream": None,  # すぐ下で設定する
             "answerLength": 40,
-            "answerLevel": 25,
         }
         if msg:
             json_data["id"] = msg.author.name
             json_data["displayName"] = msg.author.display_name
             json_data["isFirst"] = msg.first
-        if json_data["isFirst"]:
-            # 初見さんへの回答は必須
-            json_data["answerLevel"] = 100
         update_message_json(json_data)
         return json_data
 

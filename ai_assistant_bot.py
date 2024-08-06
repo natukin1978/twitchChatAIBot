@@ -43,7 +43,6 @@ async def main():
             json_data = GenAI.create_message_json()
             json_data["id"] = g.config["twitch"]["loginChannel"]
             json_data["content"] = message
-            json_data["answerLevel"] = 100  # 常に回答してください
             update_message_json(json_data)
             response_text = genai.send_message_by_json(json_data)
             if response_text:
