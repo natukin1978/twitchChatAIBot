@@ -163,6 +163,7 @@ cython_debug/
 
 # Not managed as it is important information
 /config.json
+/exclude_id.txt
 /messages/error_message.txt
 /prompts/always_prompt.txt
 /prompts/base_prompt.txt

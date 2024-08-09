@@ -61,6 +61,11 @@ class TwitchBot(commands.Bot):
         if msg.echo:
             return
 
+        id = msg.author.name
+        if id in g.set_exclude_id:
+            # 無視するID
+            return
+
         if msg.content.startswith("!"):
             await self.handle_commands(msg)
             return

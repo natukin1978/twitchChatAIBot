@@ -7,5 +7,7 @@ def readText(name: str):
     if not os.path.isfile(file_path):
         # 無いならひな形を参照
         file_path += ".template"
+        if not os.path.isfile(file_path):
+            return ""
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
