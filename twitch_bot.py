@@ -69,7 +69,7 @@ class TwitchBot(commands.Bot):
 
         json_data = GenAI.create_message_json(msg)
         json_data["content"] = text
-        answerLevel = 20  # 1/5くらいの確率
+        answerLevel = 16  # 1/6くらいの確率
 
         if g.config["phantomJsCloud"]["apiKey"]:
             url = TwitchBot.find_url(text)
