@@ -1,6 +1,6 @@
 import global_value as g
 from typing import Any, Dict
-from csv_helper import readCsvToDict
+from csv_helper import read_csv_to_list
 
 
 def read_one_comme_users():
@@ -8,7 +8,7 @@ def read_one_comme_users():
     if not pathUsersCsv:
         return None
 
-    return readCsvToDict(pathUsersCsv)
+    return read_csv_to_list(pathUsersCsv)
 
 
 def get_nickname(displayName: str) -> str:
