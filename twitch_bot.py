@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from twitchio.ext import commands
 
 import global_value as g
+from emote_helper import add_emotes, remove_emote
 from genai import GenAI
 from random_helper import is_hit_by_message_json
 
@@ -69,7 +70,9 @@ class TwitchBot(commands.Bot):
             await self.handle_commands(msg)
             return
 
-        text = msg.content
+        emotes = []
+        add_emotes(emotes, msg)
+        text = remove_emote(msg.content, emotes)
 
         json_data = GenAI.create_message_json(msg)
         json_data["content"] = text
