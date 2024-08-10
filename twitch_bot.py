@@ -8,7 +8,6 @@ from twitchio.ext import commands
 
 import global_value as g
 from genai import GenAI
-from talk_voice import talk_voice, set_voice_effect
 from random_helper import is_hit_by_message_json
 
 
@@ -80,7 +79,6 @@ class TwitchBot(commands.Bot):
             url = TwitchBot.find_url(text)
             if url:
                 # Webスクレイピングを表明する
-                await talk_voice(g.WEB_SCRAPING_MESSAGE)
                 await msg.channel.send(g.WEB_SCRAPING_MESSAGE)
 
                 content = None
@@ -99,7 +97,6 @@ class TwitchBot(commands.Bot):
 
         response_text = self.genai.send_message_by_json(json_data)
         if response_text and is_hit_by_message_json(answerLevel, json_data):
-            await talk_voice(response_text)
             await msg.channel.send(response_text)
 
     @staticmethod
@@ -120,23 +117,4 @@ class TwitchBot(commands.Bot):
         json_data["content"] = text
         response_text = self.genai.send_message_by_json(json_data)
         if response_text:
-            await talk_voice(response_text)
             await ctx.send(response_text)
-
-    @commands.command(name="ai_speed")
-    async def cmd_ai_speed(self, ctx: commands.Context):
-        id = ctx.message.author.name
-        if id != g.config["twitch"]["loginChannel"]:
-            # 主人のみ
-            return
-        text = TwitchBot.get_cmd_value(ctx.message.content)
-        await set_voice_effect("speed", text)
-
-    @commands.command(name="ai_volume")
-    async def cmd_ai_volume(self, ctx: commands.Context):
-        id = ctx.message.author.name
-        if id != g.config["twitch"]["loginChannel"]:
-            # 主人のみ
-            return
-        text = TwitchBot.get_cmd_value(ctx.message.content)
-        await set_voice_effect("volume", text)

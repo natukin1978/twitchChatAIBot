@@ -10,7 +10,6 @@ from config_helper import readConfig
 from genai import GenAI
 from text_helper import readText
 from twitch_bot import TwitchBot
-from talk_voice import talk_voice, set_voice_effect
 from one_comme_users import update_message_json, read_one_comme_users
 
 g.BASE_PROMPT = readText("prompts/base_prompt.txt")
@@ -47,17 +46,12 @@ async def main():
             update_message_json(json_data)
             response_text = genai.send_message_by_json(json_data)
             if response_text:
-                await talk_voice(response_text)
                 await client.get_channel(g.config["twitch"]["loginChannel"]).send(
                     response_text
                 )
             return web.Response(text="Message sent to Twitch chat")
         else:
             return web.Response(status=400, text="No message found in request")
-
-    configAS = g.config["assistantSeika"]
-    await set_voice_effect("speed", configAS["speed"])
-    await set_voice_effect("volume", configAS["volume"])
 
     genai = GenAI()
     print("base_prompt:")
