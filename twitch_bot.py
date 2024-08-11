@@ -95,7 +95,7 @@ class TwitchBot(commands.Bot):
                     content = await TwitchBot.web_scraping(url, "plainText")
 
                 json_data["content"] = g.WEB_SCRAPING_PROMPT + "\n" + content
-                json_data["answerLength"] = 80  # Webの内容なのでちょっと大目に見る
+                json_data["answerLength"] = 60  # Webの内容なのでちょっと大目に見る
                 answerLevel = 100  # 常に回答してください
 
         response_text = self.genai.send_message_by_json(json_data)
