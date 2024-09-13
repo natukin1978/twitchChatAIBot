@@ -75,8 +75,8 @@ async def main():
     bot = TwitchBot(genai)
     await bot.connect()
 
-    # WebSocket の設定
-    websocket_uri = "ws://127.0.0.1:50000/textonly"
+    conf_rs = g.config["recvServer"]
+    websocket_uri = f"ws://{conf_rs['name']}:{conf_rs['port']}/textonly"
     websocket_task = asyncio.create_task(connect_and_receive(websocket_uri))
     await websocket_task
 

@@ -11,8 +11,8 @@
     "apiKey": ""
   },
   "recvServer": {
-    "name": "localhost",
-    "port": 14310
+    "name": "127.0.0.1",
+    "port": 50000
   },
   "oneComme": {
     "pathUsersCsv": ""
