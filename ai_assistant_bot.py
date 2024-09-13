@@ -8,10 +8,10 @@ import websockets
 import global_value as g
 from config_helper import readConfig
 from genai import GenAI
+from one_comme_users import read_one_comme_users, update_message_json
+from random_helper import is_hit
 from text_helper import readText
 from twitch_bot import TwitchBot
-from one_comme_users import update_message_json, read_one_comme_users
-from random_helper import is_hit_by_message_json
 
 g.BASE_PROMPT = readText("prompts/base_prompt.txt")
 g.WEB_SCRAPING_PROMPT = readText("prompts/web_scraping_prompt.txt")

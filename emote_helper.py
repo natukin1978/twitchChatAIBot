@@ -1,5 +1,6 @@
-import twitchio
 from typing import List
+
+import twitchio
 
 
 def add_emotes(emotes: List[str], msg: twitchio.Message) -> None:

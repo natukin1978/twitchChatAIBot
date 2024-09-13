@@ -1,8 +1,9 @@
 import datetime
 import json
-import twitchio
 from typing import Any, Dict
+
 import google.generativeai as genai
+import twitchio
 from google.generativeai.types import (
     HarmBlockThreshold,
     HarmCategory,
@@ -10,8 +11,8 @@ from google.generativeai.types import (
 )
 
 import global_value as g
-from text_helper import readText
 from one_comme_users import update_message_json
+from text_helper import readText
 
 
 class GenAI:
