@@ -85,7 +85,7 @@ class GenAI:
             json_data_buffer = GenAI.create_message_json()
             json_data_buffer["id"] = g.config["twitch"]["loginChannel"]
             json_data_buffer["displayName"] = g.talker_name
-            json_data_buffer["content"] = "\n".join(g.talk_buffers)
+            json_data_buffer["content"] = " ".join(g.talk_buffers)
             update_message_json(json_data_buffer)
             g.talk_buffers.clear()
             self.send_message_by_json(json_data_buffer)
