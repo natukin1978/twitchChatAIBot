@@ -1,9 +1,8 @@
 import asyncio
 import re
 
-import aiohttp
 import twitchio
-from aiohttp import web
+import websockets
 
 import global_value as g
 from config_helper import readConfig
@@ -26,32 +25,15 @@ g.set_exclude_id = set(readText("exclude_id.txt").splitlines())
 
 
 async def main():
-    async def handle(request):
-        message = None
-        if request.method == "GET":
-            message = request.query["message"]
-        elif request.method == "POST":
-            try:
-                data = await request.json()
-                message = data.get("message")
-            except Exception as e:
-                return web.Response(status=500, text=str(e))
-        else:
-            return web.Response(status=405, text="Method Not Allowed")
-
-        if message:
-            json_data = GenAI.create_message_json()
-            json_data["id"] = g.config["twitch"]["loginChannel"]
-            json_data["content"] = message
-            update_message_json(json_data)
-            response_text = genai.send_message_by_json(json_data)
-            if response_text:
-                await client.get_channel(g.config["twitch"]["loginChannel"]).send(
-                    response_text
-                )
-            return web.Response(text="Message sent to Twitch chat")
-        else:
-            return web.Response(status=400, text="No message found in request")
+    async def connect_and_receive(uri):
+        async with websockets.connect(uri) as websocket:
+            while True:
+                try:
+                    response = await websocket.recv()
+                    print(f"Received from WebSocket: {response}")
+                except websockets.exceptions.ConnectionClosed:
+                    print("WebSocket connection closed")
+                    break
 
     genai = GenAI()
     print("base_prompt:")
@@ -63,21 +45,13 @@ async def main():
     )
     await client.connect()
 
-    app = web.Application()
-    app.router.add_get("/ai", handle)
-    app.router.add_post("/ai", handle)
-    runner = web.AppRunner(app)
-    await runner.setup()
-
-    conf_rs = g.config["recvServer"]
-    if conf_rs and conf_rs["name"] and conf_rs["port"]:
-        site = web.TCPSite(runner, conf_rs["name"], conf_rs["port"])
-        await site.start()
-
     bot = TwitchBot(genai)
-    # await bot.connect() 終端なので下を使用する
-    await bot.start()
+    await bot.connect()
 
+    # WebSocket の設定
+    websocket_uri = "ws://127.0.0.1:50000/textonly"
+    websocket_task = asyncio.create_task(connect_and_receive(websocket_uri))
+    await websocket_task
 
 if __name__ == "__main__":
     asyncio.run(main())
