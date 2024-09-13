@@ -77,3 +77,16 @@ class GenAI:
     def send_message_by_json(self, json_data: Dict[str, Any]) -> str:
         json_str = json.dumps(json_data, ensure_ascii=False)
         return self.send_message(json_str)
+
+    def send_message_by_json_with_buf(self, json_data: Dict[str, Any]) -> str:
+        if g.talk_buffers:
+            # 溜まってたバッファ分を送ってクリアする
+            json_data_buffer = GenAI.create_message_json()
+            json_data_buffer["id"] = g.config["twitch"]["loginChannel"]
+            json_data_buffer["displayName"] = g.talkerName
+            json_data_buffer["content"] = "\n".join(g.talk_buffers)
+            update_message_json(json_data_buffer)
+            g.talk_buffers.clear()
+            self.send_message_by_json(json_data_buffer)
+        # 本命
+        return self.send_message_by_json(json_data)
