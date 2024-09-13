@@ -84,7 +84,7 @@ class GenAI:
             # 溜まってたバッファ分を送ってクリアする
             json_data_buffer = GenAI.create_message_json()
             json_data_buffer["id"] = g.config["twitch"]["loginChannel"]
-            json_data_buffer["displayName"] = g.talkerName
+            json_data_buffer["displayName"] = g.talker_name
             json_data_buffer["content"] = "\n".join(g.talk_buffers)
             update_message_json(json_data_buffer)
             g.talk_buffers.clear()
