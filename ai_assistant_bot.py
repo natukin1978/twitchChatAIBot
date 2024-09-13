@@ -41,7 +41,23 @@ async def main():
                     except json.JSONDecodeError:
                         # プレーンテキストとして処理する
                         message = message.strip()
-                        g.talk_buffers.append(message)
+                        answerLevel = 2
+                        if is_hit(answerLevel):
+                            json_data = GenAI.create_message_json()
+                            json_data["id"] = g.config["twitch"]["loginChannel"]
+                            json_data["displayName"] = g.talkerName
+                            json_data["content"] = message.strip()
+                            update_message_json(json_data)
+                            response_text = genai.send_message_by_json_with_buf(
+                                json_data
+                            )
+                            if response_text:
+                                await client.get_channel(
+                                    g.config["twitch"]["loginChannel"]
+                                ).send(response_text)
+                        else:
+                            g.talk_buffers.append(message)
+
                 except websockets.exceptions.ConnectionClosed:
                     print("WebSocket connection closed")
                     break
