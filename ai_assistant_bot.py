@@ -1,4 +1,5 @@
 import asyncio
+import json
 import re
 
 import twitchio
@@ -10,6 +11,7 @@ from genai import GenAI
 from text_helper import readText
 from twitch_bot import TwitchBot
 from one_comme_users import update_message_json, read_one_comme_users
+from random_helper import is_hit_by_message_json
 
 g.BASE_PROMPT = readText("prompts/base_prompt.txt")
 g.WEB_SCRAPING_PROMPT = readText("prompts/web_scraping_prompt.txt")
@@ -22,6 +24,7 @@ g.config = readConfig()
 g.map_is_first_on_stream = {}
 g.one_comme_users = read_one_comme_users()
 g.set_exclude_id = set(readText("exclude_id.txt").splitlines())
+g.talkerName = ""
 
 
 async def main():
@@ -29,8 +32,26 @@ async def main():
         async with websockets.connect(uri) as websocket:
             while True:
                 try:
-                    response = await websocket.recv()
-                    print(f"Received from WebSocket: {response}")
+                    message = await websocket.recv()
+                    try:
+                        data = json.loads(message)
+                        # JSONとして処理する
+                        g.talkerName = data["talkerName"]
+                    except json.JSONDecodeError:
+                        # プレーンテキストとして処理する
+                        json_data = GenAI.create_message_json()
+                        json_data["id"] = g.config["twitch"]["loginChannel"]
+                        json_data["displayName"] = g.talkerName
+                        json_data["content"] = message.strip()
+                        update_message_json(json_data)
+                        response_text = genai.send_message_by_json(json_data)
+                        answerLevel = 4
+                        if response_text and is_hit_by_message_json(
+                            answerLevel, json_data
+                        ):
+                            await client.get_channel(
+                                g.config["twitch"]["loginChannel"]
+                            ).send(response_text)
                 except websockets.exceptions.ConnectionClosed:
                     print("WebSocket connection closed")
                     break
@@ -52,6 +73,7 @@ async def main():
     websocket_uri = "ws://127.0.0.1:50000/textonly"
     websocket_task = asyncio.create_task(connect_and_receive(websocket_uri))
     await websocket_task
+
 
 if __name__ == "__main__":
     asyncio.run(main())
