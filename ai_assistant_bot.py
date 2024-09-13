@@ -24,7 +24,7 @@ g.config = readConfig()
 g.map_is_first_on_stream = {}
 g.one_comme_users = read_one_comme_users()
 g.set_exclude_id = set(readText("exclude_id.txt").splitlines())
-g.talkerName = ""
+g.talker_name = ""
 
 
 async def main():
@@ -36,7 +36,7 @@ async def main():
                     try:
                         data = json.loads(message)
                         # JSONとして処理する
-                        g.talkerName = data["talkerName"]
+                        g.talker_name = data["talkerName"]
                     except json.JSONDecodeError:
                         # プレーンテキストとして処理する
                         json_data = GenAI.create_message_json()
