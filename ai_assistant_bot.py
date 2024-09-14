@@ -43,7 +43,12 @@ async def main():
                         message = message.strip()
                         talk_buffers_len = len(g.talk_buffers)
                         answerLevel = 2
-                        if talk_buffers_len > 1000 or is_hit(answerLevel):
+                        if (
+                            talk_buffers_len > 1000
+                            or ("教え" in message)
+                            or ("調べ" in message)
+                            or is_hit(answerLevel)
+                        ):
                             json_data = GenAI.create_message_json()
                             json_data["id"] = g.config["twitch"]["loginChannel"]
                             json_data["displayName"] = g.talkerName
