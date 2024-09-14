@@ -25,7 +25,7 @@ g.map_is_first_on_stream = {}
 g.one_comme_users = read_one_comme_users()
 g.set_exclude_id = set(readText("exclude_id.txt").splitlines())
 g.talker_name = ""
-g.talk_buffers = []
+g.talk_buffers = ""
 
 
 async def main():
@@ -41,8 +41,9 @@ async def main():
                     except json.JSONDecodeError:
                         # プレーンテキストとして処理する
                         message = message.strip()
+                        talk_buffers_len = len(g.talk_buffers)
                         answerLevel = 2
-                        if is_hit(answerLevel):
+                        if talk_buffers_len > 1000 or is_hit(answerLevel):
                             json_data = GenAI.create_message_json()
                             json_data["id"] = g.config["twitch"]["loginChannel"]
                             json_data["displayName"] = g.talkerName
@@ -56,7 +57,9 @@ async def main():
                                     g.config["twitch"]["loginChannel"]
                                 ).send(response_text)
                         else:
-                            g.talk_buffers.append(message)
+                            if talk_buffers_len > 0:
+                                g.talk_buffers += " "
+                            g.talk_buffers += message
 
                 except websockets.exceptions.ConnectionClosed:
                     print("WebSocket connection closed")
