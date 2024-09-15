@@ -29,6 +29,11 @@ g.talk_buffers = ""
 
 
 async def main():
+    def has_response_keywords(message: str) -> bool:
+        conf_rs = g.config["recvServer"]
+        response_keywords = conf_rs["responseKeywords"]
+        return next(filter(lambda v: v in message, response_keywords), None)
+
     async def recv_message(message: str) -> None:
         try:
             data = json.loads(message)
@@ -41,8 +46,7 @@ async def main():
             answerLevel = 2
             if (
                 talk_buffers_len > 1000
-                or ("教え" in message)
-                or ("調べ" in message)
+                or has_response_keywords(message)
                 or is_hit(answerLevel)
             ):
                 json_data = GenAI.create_message_json()

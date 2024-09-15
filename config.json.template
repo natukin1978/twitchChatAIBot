@@ -12,7 +12,11 @@
   },
   "recvServer": {
     "name": "127.0.0.1",
-    "port": 50000
+    "port": 50000,
+    "responseKeywords": [
+      "教え",
+      "調べ"
+    ]
   },
   "oneComme": {
     "pathUsersCsv": ""
