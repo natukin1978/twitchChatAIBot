@@ -1,6 +1,6 @@
 import asyncio
 import json
-import re
+import socket
 
 import twitchio
 import websockets
@@ -29,46 +29,69 @@ g.talk_buffers = ""
 
 
 async def main():
-    async def connect_and_receive(uri):
-        async with websockets.connect(uri) as websocket:
-            while True:
-                try:
-                    message = await websocket.recv()
-                    try:
-                        data = json.loads(message)
-                        # JSONとして処理する
-                        g.talker_name = data["talkerName"]
-                    except json.JSONDecodeError:
-                        # プレーンテキストとして処理する
-                        message = message.strip()
-                        talk_buffers_len = len(g.talk_buffers)
-                        answerLevel = 2
-                        if (
-                            talk_buffers_len > 1000
-                            or ("教え" in message)
-                            or ("調べ" in message)
-                            or is_hit(answerLevel)
-                        ):
-                            json_data = GenAI.create_message_json()
-                            json_data["id"] = g.config["twitch"]["loginChannel"]
-                            json_data["displayName"] = g.talkerName
-                            json_data["content"] = message.strip()
-                            update_message_json(json_data)
-                            response_text = genai.send_message_by_json_with_buf(
-                                json_data
-                            )
-                            if response_text:
-                                await client.get_channel(
-                                    g.config["twitch"]["loginChannel"]
-                                ).send(response_text)
-                        else:
-                            if talk_buffers_len > 0:
-                                g.talk_buffers += " "
-                            g.talk_buffers += message
+    async def recv_message(message: str) -> None:
+        try:
+            data = json.loads(message)
+            # JSONとして処理する
+            g.talker_name = data["talkerName"]
+        except json.JSONDecodeError:
+            # プレーンテキストとして処理する
+            message = message.strip()
+            talk_buffers_len = len(g.talk_buffers)
+            answerLevel = 2
+            if (
+                talk_buffers_len > 1000
+                or ("教え" in message)
+                or ("調べ" in message)
+                or is_hit(answerLevel)
+            ):
+                json_data = GenAI.create_message_json()
+                json_data["id"] = g.config["twitch"]["loginChannel"]
+                json_data["displayName"] = g.talker_name
+                json_data["content"] = message.strip()
+                update_message_json(json_data)
+                response_text = genai.send_message_by_json_with_buf(json_data)
+                if response_text:
+                    await client.get_channel(g.config["twitch"]["loginChannel"]).send(
+                        response_text
+                    )
+            else:
+                if talk_buffers_len > 0:
+                    g.talk_buffers += " "
+                g.talk_buffers += message
 
-                except websockets.exceptions.ConnectionClosed:
-                    print("WebSocket connection closed")
-                    break
+    async def websocket_listen_forever(websocket_uri: str) -> None:
+        reply_timeout = 10
+        ping_timeout = 5
+        sleep_time = 5
+        while True:
+            # outer loop restarted every time the connection fails
+            try:
+                async with websockets.connect(websocket_uri) as ws:
+                    while True:
+                        # listener loop
+                        try:
+                            message = await asyncio.wait_for(
+                                ws.recv(), timeout=reply_timeout
+                            )
+                            await recv_message(message)
+                        except (
+                            asyncio.TimeoutError,
+                            websockets.exceptions.ConnectionClosed,
+                        ):
+                            try:
+                                pong = await ws.ping()
+                                await asyncio.wait_for(pong, timeout=ping_timeout)
+                                continue
+                            except:
+                                await asyncio.sleep(sleep_time)
+                                break
+            except socket.gaierror:
+                await asyncio.sleep(sleep_time)
+                continue
+            except ConnectionRefusedError:
+                await asyncio.sleep(sleep_time)
+                continue
 
     genai = GenAI()
     print("base_prompt:")
@@ -85,7 +108,7 @@ async def main():
 
     conf_rs = g.config["recvServer"]
     websocket_uri = f"ws://{conf_rs['name']}:{conf_rs['port']}/textonly"
-    websocket_task = asyncio.create_task(connect_and_receive(websocket_uri))
+    websocket_task = asyncio.create_task(websocket_listen_forever(websocket_uri))
     await websocket_task
 
 
