@@ -97,6 +97,10 @@ async def main():
                 await asyncio.sleep(sleep_time)
                 continue
 
+    async def run_forever():
+        while True:
+            await asyncio.sleep(15)
+
     genai = GenAI()
     print("base_prompt:")
     print(g.BASE_PROMPT)
@@ -111,8 +115,12 @@ async def main():
     await bot.connect()
 
     conf_rs = g.config["recvServer"]
-    websocket_uri = f"ws://{conf_rs['name']}:{conf_rs['port']}/textonly"
-    websocket_task = asyncio.create_task(websocket_listen_forever(websocket_uri))
+    if conf_rs and conf_rs["name"] and conf_rs["port"]:
+        websocket_uri = f"ws://{conf_rs['name']}:{conf_rs['port']}/textonly"
+        websocket_task = asyncio.create_task(websocket_listen_forever(websocket_uri))
+    else:
+        # ダミーのタスク
+        websocket_task = asyncio.create_task(run_forever())
     await websocket_task
 
 
