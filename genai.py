@@ -1,8 +1,9 @@
 import datetime
 import json
-import twitchio
 from typing import Any, Dict
+
 import google.generativeai as genai
+import twitchio
 from google.generativeai.types import (
     HarmBlockThreshold,
     HarmCategory,
@@ -10,8 +11,8 @@ from google.generativeai.types import (
 )
 
 import global_value as g
-from text_helper import readText
 from one_comme_users import update_message_json
+from text_helper import readText
 
 
 class GenAI:
@@ -77,3 +78,16 @@ class GenAI:
     def send_message_by_json(self, json_data: Dict[str, Any]) -> str:
         json_str = json.dumps(json_data, ensure_ascii=False)
         return self.send_message(json_str)
+
+    def send_message_by_json_with_buf(self, json_data: Dict[str, Any]) -> str:
+        if len(g.talk_buffers) > 0:
+            # 溜まってたバッファ分を送ってクリアする
+            json_data_buffer = GenAI.create_message_json()
+            json_data_buffer["id"] = g.config["twitch"]["loginChannel"]
+            json_data_buffer["displayName"] = g.talker_name
+            json_data_buffer["content"] = g.talk_buffers
+            update_message_json(json_data_buffer)
+            g.talk_buffers = ""
+            self.send_message_by_json(json_data_buffer)
+        # 本命
+        return self.send_message_by_json(json_data)

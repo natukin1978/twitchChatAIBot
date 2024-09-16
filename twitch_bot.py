@@ -98,7 +98,7 @@ class TwitchBot(commands.Bot):
                 json_data["answerLength"] = 70  # Webの内容なのでちょっと大目に見る
                 answerLevel = 100  # 常に回答してください
 
-        response_text = self.genai.send_message_by_json(json_data)
+        response_text = self.genai.send_message_by_json_with_buf(json_data)
         if response_text and is_hit_by_message_json(answerLevel, json_data):
             await msg.channel.send(response_text)
 
@@ -118,6 +118,6 @@ class TwitchBot(commands.Bot):
 
         json_data = GenAI.create_message_json(ctx.message)
         json_data["content"] = text
-        response_text = self.genai.send_message_by_json(json_data)
+        response_text = self.genai.send_message_by_json_with_buf(json_data)
         if response_text:
             await ctx.send(response_text)

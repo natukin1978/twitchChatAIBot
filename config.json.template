@@ -11,17 +11,12 @@
     "apiKey": ""
   },
   "recvServer": {
-    "name": "localhost",
-    "port": 14310
-  },
-  "assistantSeika": {
-    "name": "localhost",
-    "port": 7180,
-    "login": "SeikaServerUser",
-    "password": "SeikaServerPassword",
-    "speed": 1.0,
-    "volume": 1.0,
-    "cid": 0
+    "name": "127.0.0.1",
+    "port": 50000,
+    "responseKeywords": [
+      "教え",
+      "調べ"
+    ]
   },
   "oneComme": {
     "pathUsersCsv": ""
