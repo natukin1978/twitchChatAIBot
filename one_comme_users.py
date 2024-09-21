@@ -1,7 +1,10 @@
 from typing import Any, Dict
+import pickle
 
 import global_value as g
 from csv_helper import read_csv_to_list
+
+FILENAME_IS_FIRST_ON_STREAM = "map_is_first_on_stream.pkl"
 
 
 def read_one_comme_users():
@@ -29,6 +32,16 @@ def update_nickname(json_data: Dict[str, Any]) -> None:
         json_data["nickname"] = nickname
 
 
+def load_is_first_on_stream() -> None:
+    with open(FILENAME_IS_FIRST_ON_STREAM, "rb") as f:
+        g.map_is_first_on_stream = pickle.load(f)
+
+
+def save_is_first_on_stream() -> None:
+    with open(FILENAME_IS_FIRST_ON_STREAM, "wb") as f:
+        pickle.dump(g.map_is_first_on_stream, f)
+
+
 def update_is_first_on_stream(json_data: Dict[str, Any]) -> None:
     name = json_data["id"]
     val = None
@@ -38,6 +51,7 @@ def update_is_first_on_stream(json_data: Dict[str, Any]) -> None:
         val = g.map_is_first_on_stream[name]
     json_data["isFirstOnStream"] = val
     g.map_is_first_on_stream[name] = False
+    save_is_first_on_stream()
 
 
 def update_message_json(json_data: Dict[str, Any]) -> None:
