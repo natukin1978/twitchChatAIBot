@@ -90,6 +90,9 @@ async def main():
                             except:
                                 await asyncio.sleep(sleep_time)
                                 break
+            except websockets.exceptions.WebSocketException:
+                await asyncio.sleep(sleep_time)
+                continue
             except socket.gaierror:
                 await asyncio.sleep(sleep_time)
                 continue
