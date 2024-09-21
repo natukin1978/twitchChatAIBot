@@ -1,5 +1,6 @@
 import datetime
 import json
+import pickle
 from typing import Any, Dict
 
 import google.generativeai as genai
@@ -16,6 +17,8 @@ from text_helper import readText
 
 
 class GenAI:
+    FILENAME_CHAT_HISTORY = "gen_ai_chat_history.pkl"
+
     GENAI_SAFETY_SETTINGS = {
         # ハラスメントは中程度を許容する
         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
@@ -30,12 +33,12 @@ class GenAI:
     def __init__(self):
         conf_g = g.config["google"]
         genai.configure(api_key=conf_g["geminiApiKey"])
-        genaiModel = genai.GenerativeModel(
+        self.genaiModel = genai.GenerativeModel(
             model_name=conf_g["modelName"],
             safety_settings=self.GENAI_SAFETY_SETTINGS,
             system_instruction=g.BASE_PROMPT,
         )
-        self.genaiChat = genaiModel.start_chat(history=[])
+        self.genaiChat = None
 
     @staticmethod
     def create_message_json(msg: twitchio.Message = None) -> Dict[str, Any]:
@@ -58,12 +61,27 @@ class GenAI:
         update_message_json(json_data)
         return json_data
 
+    def get_chat(self):
+        if not self.genaiChat:
+            self.genaiChat = self.genaiModel.start_chat(history=[])
+        return self.genaiChat
+
+    def load_chat_history(self) -> None:
+        with open(self.FILENAME_CHAT_HISTORY, "rb") as f:
+            chat_history = pickle.load(f)
+            self.genaiChat = self.genaiModel.start_chat(history=chat_history)
+
+    def save_chat_history(self) -> None:
+        with open(self.FILENAME_CHAT_HISTORY, "wb") as f:
+            pickle.dump(self.get_chat().history, f)
+
     def send_message(self, message: str) -> str:
         try:
             print(message)
-            response = self.genaiChat.send_message(message)
+            response = self.get_chat().send_message(message)
             response_text = response.text.rstrip()
             print(response_text)
+            self.save_chat_history()
             return response_text
         except StopCandidateException as e:
             print(e)
