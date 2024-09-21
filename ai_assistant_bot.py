@@ -8,7 +8,11 @@ import websockets
 import global_value as g
 from config_helper import readConfig
 from genai import GenAI
-from one_comme_users import read_one_comme_users, update_message_json
+from one_comme_users import (
+    read_one_comme_users,
+    update_message_json,
+    load_is_first_on_stream,
+)
 from random_helper import is_hit
 from text_helper import readText
 from twitch_bot import TwitchBot
@@ -104,9 +108,17 @@ async def main():
         while True:
             await asyncio.sleep(15)
 
+    print("前回の続きですか？(y/n)")
+    is_continue = input() == "y"
+
     genai = GenAI()
     print("base_prompt:")
     print(g.BASE_PROMPT)
+
+    if is_continue:
+        load_is_first_on_stream()
+        genai.load_chat_history()
+        print("前回のキャッシュをロードしました。")
 
     client = twitchio.Client(
         token=g.config["twitch"]["accessToken"],
