@@ -12,12 +12,15 @@ from google.generativeai.types import (
 )
 
 import global_value as g
+from cache_helper import get_cache_filepath
 from one_comme_users import update_message_json
 from text_helper import readText
 
 
 class GenAI:
-    FILENAME_CHAT_HISTORY = "gen_ai_chat_history.pkl"
+    FILENAME_CHAT_HISTORY = get_cache_filepath(
+        "twitchChatAIBot_gen_ai_chat_history.pkl"
+    )
 
     GENAI_SAFETY_SETTINGS = {
         # ハラスメントは中程度を許容する
