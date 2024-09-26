@@ -1,5 +1,6 @@
 import datetime
 import json
+import os
 import pickle
 from typing import Any, Dict
 
@@ -69,10 +70,13 @@ class GenAI:
             self.genaiChat = self.genaiModel.start_chat(history=[])
         return self.genaiChat
 
-    def load_chat_history(self) -> None:
+    def load_chat_history(self) -> bool:
+        if not os.path.isfile(self.FILENAME_CHAT_HISTORY):
+            return False
         with open(self.FILENAME_CHAT_HISTORY, "rb") as f:
             chat_history = pickle.load(f)
             self.genaiChat = self.genaiModel.start_chat(history=chat_history)
+            return True
 
     def save_chat_history(self) -> None:
         with open(self.FILENAME_CHAT_HISTORY, "wb") as f:

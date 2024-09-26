@@ -1,3 +1,4 @@
+import os
 import pickle
 from typing import Any, Dict
 
@@ -35,9 +36,12 @@ def update_nickname(json_data: Dict[str, Any]) -> None:
         json_data["nickname"] = nickname
 
 
-def load_is_first_on_stream() -> None:
+def load_is_first_on_stream() -> bool:
+    if not os.path.isfile(FILENAME_MAP_IS_FIRST_ON_STREAM):
+        return False
     with open(FILENAME_MAP_IS_FIRST_ON_STREAM, "rb") as f:
         g.map_is_first_on_stream = pickle.load(f)
+        return True
 
 
 def save_is_first_on_stream() -> None:
