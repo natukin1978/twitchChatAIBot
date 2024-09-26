@@ -9,9 +9,9 @@ import global_value as g
 from config_helper import readConfig
 from genai import GenAI
 from one_comme_users import (
+    load_is_first_on_stream,
     read_one_comme_users,
     update_message_json,
-    load_is_first_on_stream,
 )
 from random_helper import is_hit
 from text_helper import readText
@@ -69,9 +69,9 @@ async def main():
                 g.talk_buffers += message
 
     async def websocket_listen_forever(websocket_uri: str) -> None:
-        reply_timeout = 10
-        ping_timeout = 5
-        sleep_time = 5
+        reply_timeout = 60
+        ping_timeout = 30
+        sleep_time = 15
         while True:
             # outer loop restarted every time the connection fails
             try:
