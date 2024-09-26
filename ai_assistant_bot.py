@@ -110,8 +110,7 @@ async def main():
 
     print("前回の続きですか？(y/n)")
     is_continue = input() == "y"
-    if is_continue:
-        load_is_first_on_stream()
+    if is_continue and load_is_first_on_stream():
         print("挨拶キャッシュを復元しました。")
 
     genai = GenAI()
@@ -121,8 +120,7 @@ async def main():
     if is_continue:
         print("会話履歴を復元しますか？(y/n)")
         is_load_chat_history = input() == "y"
-        if is_load_chat_history:
-            genai.load_chat_history()
+        if is_load_chat_history and genai.load_chat_history():
             print("会話履歴を復元しました。")
 
     client = twitchio.Client(
