@@ -70,8 +70,8 @@ async def main():
 
     async def websocket_listen_forever(websocket_uri: str) -> None:
         reply_timeout = 60
-        ping_timeout = 30
-        sleep_time = 15
+        ping_timeout = 15
+        sleep_time = 5
         while True:
             # outer loop restarted every time the connection fails
             try:
@@ -94,13 +94,12 @@ async def main():
                             except:
                                 await asyncio.sleep(sleep_time)
                                 break
-            except websockets.exceptions.WebSocketException:
-                await asyncio.sleep(sleep_time)
-                continue
-            except socket.gaierror:
-                await asyncio.sleep(sleep_time)
-                continue
-            except ConnectionRefusedError:
+            except (
+                ConnectionRefusedError,
+                asyncio.exceptions.CancelledError,
+                socket.gaierror,
+                websockets.exceptions.WebSocketException,
+            ):
                 await asyncio.sleep(sleep_time)
                 continue
 
