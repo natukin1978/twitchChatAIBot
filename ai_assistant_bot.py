@@ -97,12 +97,8 @@ async def main():
                             except:
                                 await asyncio.sleep(sleep_time)
                                 break
-            except (
-                ConnectionRefusedError,
-                asyncio.exceptions.CancelledError,
-                socket.gaierror,
-                websockets.exceptions.WebSocketException,
-            ):
+            except Exception as e:
+                print(e, file=sys.stderr)
                 await asyncio.sleep(sleep_time)
                 continue
 
