@@ -34,9 +34,6 @@ class GenAI:
         HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
     }
 
-    # RequestOptionsType
-    REQUEST_OPTIONS = {"timeout": 10}
-
     def __init__(self):
         conf_g = g.config["google"]
         genai.configure(api_key=conf_g["geminiApiKey"])
@@ -88,9 +85,7 @@ class GenAI:
     def send_message(self, message: str) -> str:
         try:
             print(message)
-            response = self.get_chat().send_message(
-                message, request_options=self.REQUEST_OPTIONS
-            )
+            response = self.get_chat().send_message(message)
             response_text = response.text.rstrip()
             print(response_text)
             self.save_chat_history()
