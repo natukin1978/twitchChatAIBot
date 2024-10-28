@@ -1,6 +1,7 @@
 import asyncio
 import json
 import socket
+import sys
 
 import twitchio
 import websockets
@@ -41,6 +42,8 @@ async def main():
     async def recv_message(message: str) -> None:
         try:
             data = json.loads(message)
+            if type(data) is not dict:
+                raise json.JSONDecodeError("result value was not dict", "", "")
             # JSONとして処理する
             g.talker_name = data["talkerName"]
         except json.JSONDecodeError:
