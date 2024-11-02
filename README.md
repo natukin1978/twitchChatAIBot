@@ -1,7 +1,6 @@
 # Twitchチャット AI BOT 電脳娘フユカ
 
-![png](./images/portrait.png)
-![png](./images/fullbody.png)
+<img src="./images/portrait.png" width="33%"> <img src="./images/fullbody.png" width="33%">
 
 ## 概要
 
