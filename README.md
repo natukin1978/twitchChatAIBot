@@ -1,5 +1,8 @@
 # Twitchチャット AI BOT 電脳娘フユカ
 
+![png](./images/portrait.png)
+![png](./images/fullbody.png)
+
 ## 概要
 
 このプロジェクトは、Twitchのチャンネルチャットに入力された内容に応じて返事を返すBOTです。
