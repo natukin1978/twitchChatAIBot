@@ -78,7 +78,7 @@ git clone https://github.com/natukin1978/twitchChatAIBot.git
 
 ライブラリをPipでインストールします。
 ```
-pip -r requirements.txt
+pip install -r requirements.txt
 ```
 
 ※ ライブラリインストール前に`venv`で仮想環境を作成する事をオススメします。
