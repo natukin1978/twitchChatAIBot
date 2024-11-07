@@ -35,8 +35,8 @@ g.talk_buffers = ""
 
 async def main():
     def has_response_keywords(message: str) -> bool:
-        conf_rs = g.config["recvServer"]
-        response_keywords = conf_rs["responseKeywords"]
+        conf_nia = g.config["neoInnerApi"]
+        response_keywords = conf_nia["responseKeywords"]
         return next(filter(lambda v: v in message, response_keywords), None)
 
     async def recv_message(message: str) -> None:
@@ -130,9 +130,9 @@ async def main():
     bot = TwitchBot(genai)
     await bot.connect()
 
-    conf_rs = g.config["recvServer"]
-    if conf_rs and conf_rs["name"] and conf_rs["port"]:
-        websocket_uri = f"ws://{conf_rs['name']}:{conf_rs['port']}/textonly"
+    conf_nia = g.config["neoInnerApi"]
+    if conf_nia and conf_nia["name"] and conf_nia["port"]:
+        websocket_uri = f"ws://{conf_nia['name']}:{conf_nia['port']}/textonly"
         websocket_task = asyncio.create_task(websocket_listen_forever(websocket_uri))
     else:
         # ダミーのタスク

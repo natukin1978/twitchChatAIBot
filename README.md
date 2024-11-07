@@ -103,7 +103,7 @@ pip install -r requirements.txt
 |キー|内容|
 |-|-|
 |phantomJsCloud/apiKey|Webスクレイピング API Key https://phantomjscloud.com/|
-|recvServer|ゆかコネNeoの発話の受信(WebSocket,文のみ) https://nmori.github.io/yncneo-Docs/tech/tech_api_neo/#websocket_2|
+|neoInnerApi|ゆかコネNeoの発話の受信(WebSocket,文のみ) https://nmori.github.io/yncneo-Docs/tech/tech_api_neo/#websocket_2|
 |oneComme/pathUsersCsv|わんコメのリスナーリストの情報を取り込みます(CSV出力したもの)|
 
 #### AI人格設定

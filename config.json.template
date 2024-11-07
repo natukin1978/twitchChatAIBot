@@ -10,7 +10,7 @@
   "phantomJsCloud": {
     "apiKey": ""
   },
-  "recvServer": {
+  "neoInnerApi": {
     "name": "127.0.0.1",
     "port": 50000,
     "responseKeywords": [
