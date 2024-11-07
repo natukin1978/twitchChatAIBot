@@ -56,7 +56,7 @@ class GenAI:
             "content": None,  # 関数外で設定してね
             "isFirst": False,
             "isFirstOnStream": None,  # すぐ下で設定する
-            "answerLength": 35,
+            "answerLength": 15,
         }
         if msg:
             json_data["id"] = msg.author.name

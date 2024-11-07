@@ -118,6 +118,7 @@ class TwitchBot(commands.Bot):
 
         json_data = GenAI.create_message_json(ctx.message)
         json_data["content"] = text
+        json_data["answerLength"] = 35
         response_text = self.genai.send_message_by_json_with_buf(json_data)
         if response_text:
             await ctx.send(response_text)
