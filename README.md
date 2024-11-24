@@ -145,6 +145,17 @@ pip install -r requirements.txt
 python ai_assistant_bot.py
 ```
 
+## 備考
+
+BOTが応答したくないユーザーを指定する事ができます。例えば翻訳アプリのユーザーとか
+`exclude_id.txt`というテキストファイルにユーザー名を改行区切りで列挙してください。
+
+例
+```
+fuyuka_ai
+natukiso_translator
+```
+
 ## 貢献する
 
 このソフトに貢献したい場合は、Issue を開いてアイデアを議論するか、プルリクを送信してください。
