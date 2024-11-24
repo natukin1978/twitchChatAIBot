@@ -94,8 +94,9 @@ class TwitchBot(commands.Bot):
                 else:
                     content = await TwitchBot.web_scraping(url, "plainText")
 
+                answerLength = 70  # Webの内容なのでちょっと大目に見る
                 json_data["content"] = g.WEB_SCRAPING_PROMPT + "\n" + content
-                json_data["answerLength"] = 70  # Webの内容なのでちょっと大目に見る
+                json_data["additionalRequests"] = f"あなたの回答は{answerLength}文字以内にまとめてください"
                 answerLevel = 100  # 常に回答してください
 
         response_text = self.genai.send_message_by_json_with_buf(json_data)
@@ -115,10 +116,11 @@ class TwitchBot(commands.Bot):
     @commands.command(name="ai")
     async def cmd_ai(self, ctx: commands.Context):
         text = TwitchBot.get_cmd_value(ctx.message.content)
+        answerLength = 35
 
         json_data = GenAI.create_message_json(ctx.message)
         json_data["content"] = text
-        json_data["answerLength"] = 35
+        json_data["additionalRequests"] = f"あなたの回答は{answerLength}文字以内にまとめてください"
         response_text = self.genai.send_message_by_json_with_buf(json_data)
         if response_text:
             await ctx.send(response_text)
