@@ -48,7 +48,6 @@ class GenAI:
     def create_message_json(msg: twitchio.Message = None) -> Dict[str, Any]:
         localtime = datetime.datetime.now()
         localtime_iso_8601 = localtime.isoformat()
-        answerLength = 15
         json_data = {
             "dateTime": localtime_iso_8601,
             "id": None,
@@ -57,7 +56,7 @@ class GenAI:
             "content": None,  # 関数外で設定してね
             "isFirst": False,
             "isFirstOnStream": None,  # すぐ下で設定する
-            "additionalRequests": f"あなたの回答は{answerLength}文字以内にまとめてください",
+            "additionalRequests": None,
         }
         if msg:
             json_data["id"] = msg.author.name

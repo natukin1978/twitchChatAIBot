@@ -61,6 +61,15 @@ def update_is_first_on_stream(json_data: Dict[str, Any]) -> None:
     save_is_first_on_stream()
 
 
+def update_additional_requests(json_data: Dict[str, Any], answer_length: int) -> None:
+    json_data["additionalRequests"] = " ".join(
+        [
+            g.ADDITIONAL_REQUESTS_PROMPT.format(answerLength=answer_length),
+        ]
+    )
+
+
 def update_message_json(json_data: Dict[str, Any]) -> None:
     update_is_first_on_stream(json_data)
     update_nickname(json_data)
+    update_additional_requests(json_data, 15)

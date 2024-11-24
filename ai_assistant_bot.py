@@ -20,6 +20,7 @@ from twitch_bot import TwitchBot
 
 g.BASE_PROMPT = readText("prompts/base_prompt.txt")
 g.WEB_SCRAPING_PROMPT = readText("prompts/web_scraping_prompt.txt")
+g.ADDITIONAL_REQUESTS_PROMPT = readText("prompts/additional_requests_prompt.txt")
 g.ERROR_MESSAGE = readText("messages/error_message.txt")
 g.STOP_CANDIDATE_MESSAGE = readText("messages/stop_candidate_message.txt")
 g.WEB_SCRAPING_MESSAGE = readText("messages/web_scraping_message.txt")

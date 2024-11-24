@@ -10,6 +10,7 @@ import global_value as g
 from emote_helper import add_emotes, remove_emote
 from genai import GenAI
 from random_helper import is_hit_by_message_json
+from one_comme_users import update_additional_requests
 
 
 class TwitchBot(commands.Bot):
@@ -94,9 +95,9 @@ class TwitchBot(commands.Bot):
                 else:
                     content = await TwitchBot.web_scraping(url, "plainText")
 
-                answerLength = 70  # Webの内容なのでちょっと大目に見る
                 json_data["content"] = g.WEB_SCRAPING_PROMPT + "\n" + content
-                json_data["additionalRequests"] = f"あなたの回答は{answerLength}文字以内にまとめてください"
+                # Webの内容なのでちょっと大目に見る
+                update_additional_requests(json_data, 70)
                 answerLevel = 100  # 常に回答してください
 
         response_text = self.genai.send_message_by_json_with_buf(json_data)
@@ -116,11 +117,10 @@ class TwitchBot(commands.Bot):
     @commands.command(name="ai")
     async def cmd_ai(self, ctx: commands.Context):
         text = TwitchBot.get_cmd_value(ctx.message.content)
-        answerLength = 35
 
         json_data = GenAI.create_message_json(ctx.message)
         json_data["content"] = text
-        json_data["additionalRequests"] = f"あなたの回答は{answerLength}文字以内にまとめてください"
+        update_additional_requests(json_data, 35)
         response_text = self.genai.send_message_by_json_with_buf(json_data)
         if response_text:
             await ctx.send(response_text)
