@@ -74,6 +74,8 @@ class TwitchBot(commands.Bot):
         emotes = []
         add_emotes(emotes, msg)
         text = remove_emote(msg.content, emotes)
+        if not text:
+            return
 
         json_data = GenAI.create_message_json(msg)
         json_data["content"] = text
