@@ -72,4 +72,4 @@ def update_additional_requests(json_data: Dict[str, Any], answer_length: int) ->
 def update_message_json(json_data: Dict[str, Any]) -> None:
     update_is_first_on_stream(json_data)
     update_nickname(json_data)
-    update_additional_requests(json_data, 15)
+    update_additional_requests(json_data, 30)

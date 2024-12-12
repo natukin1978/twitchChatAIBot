@@ -99,7 +99,7 @@ class TwitchBot(commands.Bot):
 
                 json_data["content"] = g.WEB_SCRAPING_PROMPT + "\n" + content
                 # Webの内容なのでちょっと大目に見る
-                update_additional_requests(json_data, 70)
+                update_additional_requests(json_data, 120)
                 answerLevel = 100  # 常に回答してください
 
         response_text = self.genai.send_message_by_json_with_buf(json_data)
@@ -122,7 +122,7 @@ class TwitchBot(commands.Bot):
 
         json_data = GenAI.create_message_json(ctx.message)
         json_data["content"] = text
-        update_additional_requests(json_data, 35)
+        update_additional_requests(json_data, 70)
         response_text = self.genai.send_message_by_json_with_buf(json_data)
         if response_text:
             await ctx.send(response_text)
