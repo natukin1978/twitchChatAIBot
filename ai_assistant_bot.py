@@ -40,6 +40,11 @@ async def main():
         response_keywords = conf_nia["responseKeywords"]
         return next(filter(lambda v: v in message, response_keywords), None)
 
+    def has_exclusion_keywords(message: str) -> bool:
+        conf_nia = g.config["neoInnerApi"]
+        exclusion_keywords = conf_nia["exclusionKeywords"]
+        return next(filter(lambda v: v in message, exclusion_keywords), None)
+
     async def recv_message(message: str) -> None:
         try:
             data = json.loads(message)
@@ -50,6 +55,10 @@ async def main():
         except json.JSONDecodeError:
             # プレーンテキストとして処理する
             message = message.strip()
+            if len(message) <= 1 or has_exclusion_keywords(message):
+                # 1文字や除外キーワードは取り込まない
+                return
+
             talk_buffers_len = len(g.talk_buffers)
             answerLevel = 2
             if (

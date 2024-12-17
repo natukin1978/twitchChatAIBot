@@ -16,7 +16,11 @@
     "responseKeywords": [
       "知って",
       "教え",
-      "調べ"
+      "調べ",
+      "説明"
+    ],
+    "exclusionKeywords": [
+      "痛"
     ]
   },
   "oneComme": {
