@@ -59,18 +59,18 @@ async def main():
                 # 1文字や除外キーワードは取り込まない
                 return
 
+            is_response = has_response_keywords(message)
             talk_buffers_len = len(g.talk_buffers)
             answerLevel = 2
-            if (
-                talk_buffers_len > 1000
-                or has_response_keywords(message)
-                or is_hit(answerLevel)
-            ):
+            if is_response or talk_buffers_len > 1000 or is_hit(answerLevel):
                 json_data = GenAI.create_message_json()
                 json_data["id"] = g.config["twitch"]["loginChannel"]
                 json_data["displayName"] = g.talker_name
                 json_data["content"] = message.strip()
                 update_message_json(json_data)
+                if is_response:
+                    # レスポンス有効時は追加の要望を無効化
+                    del json_data["additionalRequests"]
                 response_text = genai.send_message_by_json_with_buf(json_data)
                 if response_text:
                     await client.get_channel(g.config["twitch"]["loginChannel"]).send(
