@@ -18,7 +18,7 @@ from one_comme_users import update_message_json
 from text_helper import readText
 
 
-class GenAI:
+class GenAIChat:
     FILENAME_CHAT_HISTORY = get_cache_filepath(
         "twitchChatAIBot_gen_ai_chat_history.pkl"
     )
@@ -107,7 +107,7 @@ class GenAI:
     def send_message_by_json_with_buf(self, json_data: Dict[str, Any]) -> str:
         if len(g.talk_buffers) > 0:
             # 溜まってたバッファ分を送ってクリアする
-            json_data_buffer = GenAI.create_message_json()
+            json_data_buffer = GenAIChat.create_message_json()
             json_data_buffer["id"] = g.config["twitch"]["loginChannel"]
             json_data_buffer["displayName"] = g.talker_name
             json_data_buffer["content"] = g.talk_buffers
