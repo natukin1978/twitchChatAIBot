@@ -8,19 +8,19 @@ from twitchio.ext import commands
 
 import global_value as g
 from emote_helper import add_emotes, remove_emote
-from genai import GenAI
+from genai_chat import GenAIChat
 from random_helper import is_hit_by_message_json
 from one_comme_users import update_additional_requests
 
 
 class TwitchBot(commands.Bot):
-    def __init__(self, genai: GenAI):
+    def __init__(self, genai_chat: GenAIChat):
         super().__init__(
             token=g.config["twitch"]["accessToken"],
             prefix="!",
             initial_channels=[g.config["twitch"]["loginChannel"]],
         )
-        self.genai = genai
+        self.genai_chat = genai_chat
 
     @staticmethod
     def find_url(text: str) -> str:
@@ -77,7 +77,7 @@ class TwitchBot(commands.Bot):
         if not text:
             return
 
-        json_data = GenAI.create_message_json(msg)
+        json_data = GenAIChat.create_message_json(msg)
         json_data["content"] = text
         answerLevel = 16  # 1/6くらいの確率
 
@@ -102,7 +102,7 @@ class TwitchBot(commands.Bot):
                 update_additional_requests(json_data, 120)
                 answerLevel = 100  # 常に回答してください
 
-        response_text = self.genai.send_message_by_json_with_buf(json_data)
+        response_text = self.genai_chat.send_message_by_json_with_buf(json_data)
         if response_text and is_hit_by_message_json(answerLevel, json_data):
             await msg.channel.send(response_text)
 
@@ -120,9 +120,9 @@ class TwitchBot(commands.Bot):
     async def cmd_ai(self, ctx: commands.Context):
         text = TwitchBot.get_cmd_value(ctx.message.content)
 
-        json_data = GenAI.create_message_json(ctx.message)
+        json_data = GenAIChat.create_message_json(ctx.message)
         json_data["content"] = text
         update_additional_requests(json_data, 70)
-        response_text = self.genai.send_message_by_json_with_buf(json_data)
+        response_text = self.genai_chat.send_message_by_json_with_buf(json_data)
         if response_text:
             await ctx.send(response_text)

@@ -8,7 +8,7 @@ import websockets
 
 import global_value as g
 from config_helper import readConfig
-from genai import GenAI
+from genai_chat import GenAIChat
 from one_comme_users import (
     load_is_first_on_stream,
     read_one_comme_users,
@@ -63,7 +63,7 @@ async def main():
             talk_buffers_len = len(g.talk_buffers)
             answerLevel = 2
             if is_response or talk_buffers_len > 1000 or is_hit(answerLevel):
-                json_data = GenAI.create_message_json()
+                json_data = GenAIChat.create_message_json()
                 json_data["id"] = g.config["twitch"]["loginChannel"]
                 json_data["displayName"] = g.talker_name
                 json_data["content"] = message.strip()
@@ -71,7 +71,7 @@ async def main():
                 if is_response:
                     # レスポンス有効時は追加の要望を無効化
                     del json_data["additionalRequests"]
-                response_text = genai.send_message_by_json_with_buf(json_data)
+                response_text = genai_chat.send_message_by_json_with_buf(json_data)
                 if response_text:
                     await client.get_channel(g.config["twitch"]["loginChannel"]).send(
                         response_text
@@ -121,14 +121,14 @@ async def main():
     if is_continue and load_is_first_on_stream():
         print("挨拶キャッシュを復元しました。")
 
-    genai = GenAI()
+    genai_chat = GenAIChat()
     print("base_prompt:")
     print(g.BASE_PROMPT)
 
     if is_continue:
         print("会話履歴を復元しますか？(y/n)")
         is_load_chat_history = input() == "y"
-        if is_load_chat_history and genai.load_chat_history():
+        if is_load_chat_history and genai_chat.load_chat_history():
             print("会話履歴を復元しました。")
 
     client = twitchio.Client(
@@ -137,7 +137,7 @@ async def main():
     )
     await client.connect()
 
-    bot = TwitchBot(genai)
+    bot = TwitchBot(genai_chat)
     await bot.connect()
 
     conf_nia = g.config["neoInnerApi"]
