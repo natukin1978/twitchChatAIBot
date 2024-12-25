@@ -122,8 +122,6 @@ async def main():
         print("挨拶キャッシュを復元しました。")
 
     genai_chat = GenAIChat()
-    print("base_prompt:")
-    print(g.BASE_PROMPT)
 
     if is_continue:
         print("会話履歴を復元しますか？(y/n)")
@@ -139,6 +137,9 @@ async def main():
 
     bot = TwitchBot(genai_chat)
     await bot.connect()
+
+    print("base_prompt:")
+    print(g.BASE_PROMPT)
 
     conf_nia = g.config["neoInnerApi"]
     if conf_nia and conf_nia["name"] and conf_nia["port"]:
