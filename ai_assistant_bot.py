@@ -1,5 +1,7 @@
 import asyncio
 import json
+import os
+import pickle
 import socket
 import sys
 
@@ -7,6 +9,7 @@ import twitchio
 import websockets
 
 import global_value as g
+from cache_helper import get_cache_filepath
 from config_helper import readConfig
 from genai_chat import GenAIChat
 from one_comme_users import (
@@ -17,6 +20,7 @@ from one_comme_users import (
 from random_helper import is_hit
 from text_helper import readText
 from twitch_bot import TwitchBot
+from youtube_bot import YoutubeBot
 
 g.BASE_PROMPT = readText("prompts/base_prompt.txt")
 g.WEB_SCRAPING_PROMPT = readText("prompts/web_scraping_prompt.txt")
@@ -32,6 +36,22 @@ g.one_comme_users = read_one_comme_users()
 g.set_exclude_id = set(readText("exclude_id.txt").splitlines())
 g.talker_name = ""
 g.talk_buffers = ""
+g.live_video_id = ""
+
+FILENAME_LIVE_VIDEO_ID = get_cache_filepath("twitchChatAIBot_live_video_id.pkl")
+
+
+def load_live_video_id() -> bool:
+    if not os.path.isfile(FILENAME_LIVE_VIDEO_ID):
+        return False
+    with open(FILENAME_LIVE_VIDEO_ID, "rb") as f:
+        g.live_video_id = pickle.load(f)
+        return True
+
+
+def save_live_video_id() -> None:
+    with open(FILENAME_LIVE_VIDEO_ID, "wb") as f:
+        pickle.dump(g.live_video_id, f)
 
 
 async def main():
@@ -118,7 +138,7 @@ async def main():
 
     print("前回の続きですか？(y/n)")
     is_continue = input() == "y"
-    if is_continue and load_is_first_on_stream():
+    if is_continue and load_is_first_on_stream() and load_live_video_id():
         print("挨拶キャッシュを復元しました。")
 
     genai_chat = GenAIChat()
@@ -137,6 +157,14 @@ async def main():
 
     bot = TwitchBot(genai_chat)
     await bot.connect()
+
+    if not g.live_video_id:
+        print("live video id:")
+        g.live_video_id = input()
+    if g.live_video_id:
+        bot2 = YoutubeBot(genai_chat, client)
+        await bot2.run()
+        save_live_video_id()
 
     print("base_prompt:")
     print(g.BASE_PROMPT)
