@@ -9,8 +9,8 @@ from twitchio.ext import commands
 import global_value as g
 from emote_helper import add_emotes, remove_emote
 from genai_chat import GenAIChat
-from random_helper import is_hit_by_message_json
 from one_comme_users import update_additional_requests
+from random_helper import is_hit_by_message_json
 
 
 class TwitchBot(commands.Bot):

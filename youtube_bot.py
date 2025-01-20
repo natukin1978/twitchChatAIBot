@@ -100,7 +100,7 @@ class YoutubeBot:
 
     async def run(self):
         self.live_chat_id = await self.get_live_chat_id()
-        if self.live_chat_id:
+        if not self.live_chat_id:
             return
         self.chat_task = asyncio.create_task(self.get_chat_messages())
         # try:
