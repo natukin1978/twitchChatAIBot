@@ -2,6 +2,13 @@
 
 <img src="./images/portrait.png" width="33%"> <img src="./images/fullbody.png" width="33%">
 
+## このリポジトリは今後メンテナンスしません
+
+このソフトは機能を詰め込み過ぎたため、機能を分離したものを開発しています。
+
+[電脳娘フユカ (AIモデレーター Fuyuka API)](https://github.com/natukin1978/ai-moderator-fuyuka)
+[Twitchチャット BOT](https://github.com/natukin1978/twitch-chat-bot)
+
 ## 概要
 
 このプロジェクトは、Twitchのチャンネルチャットに入力された内容に応じて返事を返すBOTです。
